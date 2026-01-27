@@ -1,0 +1,31 @@
+[@steps](file:///Users/bambus/Documents/Leistungsbeschreibungsgenerator/src/components/steps)
+[@TimelineResourcesStep.vue](file:///Users/bambus/Documents/Leistungsbeschreibungsgenerator/src/components/steps/TimelineResourcesStep.vue) [@BasicDataStep.vue](file:///Users/bambus/Documents/Leistungsbeschreibungsgenerator/src/components/steps/BasicDataStep.vue) [@ScopeStep.vue](file:///Users/bambus/Documents/Leistungsbeschreibungsgenerator/src/components/steps/ScopeStep.vue)
+We now want to define the steps needed to fill this form:
+
+1. Nutzer gibt an ob er in einer Fachabteilung oder im Einkauf arbeitet
+2. Titel der Leistungsbeschreibung, Tooltip: "z.B. Instandsetzung der Fassade oder Lieferung von Labormöbeln"
+3. Wenn als Einkauf: Vergabenummer
+4. Leistungsart (Bauleistung (VOB) oder Liefer-Dienstleistung (VOL))
+5. Vertragsform (Einzelauftrag oder Rahmenvereinbarung) Tooltip: Einzelauftrag
+Ein einmaliger Auftrag mit klar definiertem Umfang und Zeitpunkt.
+Beispiel: Eine einzelne Lieferung von 100 Stühlen.
+Rahmenvereinbarung
+Eine längerfristige Vereinbarung mit festen Konditionen für mehrere Abrufe.
+Beispiel: Über 2 Jahre hinweg regelmäßig Stühle zu vereinbarten Preisen bestellen.
+6. Ist-Zustand: Leistungsort - Tooltip: z.B. Campus Deutz
+7. Ist-Zustand: Beschreibung der aktuellen Situation - Tooltip: Kurze Beschreibung des Projekts, bzw. Vorhabens in dessen Rahmen die Leistung benötigt wird.
+8.1 Bei VOB: Eingabefeld für STLB-Nummer - Tooltip: z.B. 663 Maler oder 682 Elektro
+8.2 Bei VOL: Textfeld für die Definition der Ware oder Dienstleistung.
+9. Zeitraum für die Leistungserbringung - Startdatum und Enddatum
+10. Anforderungen an die Eignung des Bieters
+- Hier kann der Nutzer beliebig viele Zeilen hinzufügen.
+- Jeder Eintrag besteht dabei aus dem Kritierum (Input) und beliebig vielen Anforderung (Textfelder) die vom Nutzer hinzugefügt werden können
+11. Anforderungen an die Leistung
+- Hier kann der Nutzer beliebig viele Zeilen hinzufügen.
+- Jeder Eintrag besteht dabei aus einem Textfeld für "Anforderung an die Leistung" und einer "Ausschluss- und Bewertungskriterien" Select-Feld (A oder B) und bei Auswahl von B eine Einschätzung der Wichtigkeit in Prozent "Gewichtung"
+12. Kosten und Preise - Tooltip: Die hier zu erstellende Tabelle soll die Vergleichbarkeit von Angeboten ermöglichen. Fügen Sie die relevanten Kosten- und Preiskriterien hinzu.
+- Standard Spalten: Leistung, Menge, Einzelpreis in Euro ohne MwSt., Gesamtpreis in Euro ohne MwSt.
+- Zeilenanzahl wird durch ein Eingabefeld bestimmt
+13. Wenn als Einkauf: Auftragsvolumen in Euro (netto) - Tooltip: Geschätztes Auftragsvolumen zur besseren Einordnung der Ausschreibung.
+14. Wenn als Einkauf: Vertragslaufzeit (Standard Maximalwert ist 4 Jahre)
+15. Anlagen: Beliebigviele Dokument namen (als eigene löschbare oder erstellbare Eingabefelder)
