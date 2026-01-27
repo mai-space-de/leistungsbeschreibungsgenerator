@@ -132,13 +132,15 @@ export default {
 
 <style scoped>
 .preview-panel {
-  flex: 0 0 40%;
   background: #ffffff;
   border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   animation: slideIn 0.3s ease-out;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  height: 100%;
 }
 
 @keyframes slideIn {
@@ -186,7 +188,7 @@ export default {
 .preview-content {
   flex: 1;
   overflow-y: auto;
-  max-height: 80vh;
+  height: calc(100% - 60px); /* Subtract header height */
   border: 1px solid var(--border);
 }
 
@@ -278,18 +280,15 @@ export default {
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
-  .preview-panel {
-    flex: 0 0 45%;
-  }
+  /* No specific flex adjustments needed - handled by grid */
 }
 
 @media (max-width: 968px) {
-  .preview-panel {
-    flex: none;
-    height: 40vh;
+.preview-panel {
     border-left: none;
     border-top: 1px solid var(--border);
-  }
+    height: 50vh;
+}
   
   .document-page {
     padding: 15mm;

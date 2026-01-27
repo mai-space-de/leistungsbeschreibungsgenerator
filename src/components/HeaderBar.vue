@@ -30,7 +30,39 @@ export default {
       default: false
     }
   },
-  emits: ['restart', 'export-pdf', 'export-word', 'toggle-preview']
+  emits: ['restart', 'export-pdf', 'export-word', 'toggle-preview', 'height-changed'],
+  data() {
+    return {
+      resizeObserver: null
+    };
+  },
+  mounted() {
+    this.$nextTick(() => {
+      this.emitHeight();
+      this.setupResizeObserver();
+    });
+  },
+  beforeUnmount() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+  },
+  methods: {
+    emitHeight() {
+      if (this.$el) {
+        const height = this.$el.getBoundingClientRect().height;
+        this.$emit('height-changed', height);
+      }
+    },
+    setupResizeObserver() {
+      if ('ResizeObserver' in window && this.$el) {
+        this.resizeObserver = new ResizeObserver(() => {
+          this.emitHeight();
+        });
+        this.resizeObserver.observe(this.$el);
+      }
+    }
+  }
 }
 </script>
 
@@ -39,12 +71,14 @@ export default {
   background: var(--primary);
   color: white;
   padding: 15px 20px;
+  height: var(--header-height);
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .header-title {
@@ -111,17 +145,19 @@ export default {
     flex-direction: column;
     text-align: center;
     padding: 15px;
+    height: auto;
+    min-height: var(--header-height);
   }
-  
+
   .header-title {
     margin-bottom: 15px;
     font-size: 1.3rem;
   }
-  
+
   .header-buttons {
     justify-content: center;
   }
-  
+
   .btn {
     font-size: 13px;
     padding: 6px 12px;
