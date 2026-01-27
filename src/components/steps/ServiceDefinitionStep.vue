@@ -103,6 +103,14 @@ export default {
       if (!this.formData.endDate) {
         errors.endDate = 'Enddatum ist erforderlich';
       }
+      // Check if end date is after start date
+      if (this.formData.startDate && this.formData.endDate) {
+        const startDate = new Date(this.formData.startDate);
+        const endDate = new Date(this.formData.endDate);
+        if (endDate < startDate) {
+          errors.endDate = 'Enddatum muss nach dem Startdatum liegen';
+        }
+      }
       return errors;
     }
   },
@@ -144,27 +152,27 @@ export default {
 .form-group.has-error input,
 .form-group.has-error select,
 .form-group.has-error textarea {
-  border-color: #dc3545;
+  border-color: var(--error-color);
 }
 
 .form-group.has-error input:focus,
 .form-group.has-error select:focus,
 .form-group.has-error textarea:focus {
-  border-color: #dc3545;
+  border-color: var(--error-color);
   box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
 }
 
 .date-input.has-error input {
-  border-color: #dc3545;
+  border-color: var(--error-color);
 }
 
 .date-input.has-error input:focus {
-  border-color: #dc3545;
+  border-color: var(--error-color);
   box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
 }
 
 .error-message {
-  color: #dc3545;
+  color: var(--error-color);
   font-size: 12px;
   margin-top: 5px;
   display: flex;

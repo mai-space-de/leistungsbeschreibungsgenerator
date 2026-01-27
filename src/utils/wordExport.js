@@ -10,7 +10,7 @@ import { saveAs } from 'file-saver';
 export async function exportToWord(formData, filename = 'Leistungsbeschreibung.docx') {
   try {
     // Create document sections
-    const sections = generateDocumentSections(formData, { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType });
+    const sections = generateDocumentSections(formData);
     
     // Create Word document
     const doc = new Document({
@@ -43,11 +43,9 @@ export async function exportToWord(formData, filename = 'Leistungsbeschreibung.d
 /**
  * Generates document sections for Word export
  * @param {Object} formData - The form data
- * @param {Object} docxClasses - The docx classes
  * @returns {Array} Array of document paragraphs and tables
  */
-function generateDocumentSections(formData, docxClasses) {
-  const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = docxClasses;
+function generateDocumentSections(formData) {
   const sections = [];
 
   // Title
