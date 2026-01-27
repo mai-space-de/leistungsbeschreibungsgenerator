@@ -10,7 +10,7 @@
       @click="toggleMobileMenu" 
       class="hamburger-btn" 
       :class="{ 'is-active': isMobileMenuOpen }"
-      aria-label="Menu"
+      aria-label="Toggle navigation menu"
       :aria-expanded="isMobileMenuOpen"
       aria-controls="mobile-menu"
     >
