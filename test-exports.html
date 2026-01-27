@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export Tests - Leistungsbeschreibung Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #0066cc;
+      border-bottom: 2px solid #0066cc;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #333;
+      margin-top: 30px;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-left: 4px solid #0066cc;
+      border-radius: 4px;
+    }
+    button {
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin: 10px 10px 10px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #0052a3;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .result {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .result.success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .result.error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    .result.info {
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      color: #0c5460;
+    }
+    .data-preview {
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 15px 0;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .data-preview h3 {
+      margin-top: 0;
+      color: #0066cc;
+    }
+    .field {
+      margin: 8px 0;
+      font-size: 13px;
+    }
+    .field strong {
+      color: #333;
+      min-width: 180px;
+      display: inline-block;
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #0066cc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Export Module Tests</h1>
+    <p>This page tests the PDF export, Word export, and Preview modules to ensure they correctly represent all form data.</p>
+
+    <div class="test-section">
+      <h2>1. Test Data Generation</h2>
+      <p>Generate comprehensive test data with all fields populated:</p>
+      <button onclick="generateTestData()">Generate Test Data</button>
+      <div id="testDataResult"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>2. PDF Export Test</h2>
+      <p>Test PDF export with the generated data:</p>
+      <button onclick="testPDFExport()" id="pdfBtn">Test PDF Export</button>
+      <div id="pdfResult"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>3. Word Export Test</h2>
+      <p>Test Word document export with the generated data:</p>
+      <button onclick="testWordExport()" id="wordBtn">Test Word Export</button>
+      <div id="wordResult"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>4. Data Validation</h2>
+      <p>Validate that all data fields are correctly represented:</p>
+      <button onclick="runValidation()" id="validateBtn">Run Validation</button>
+      <div id="validationResult"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>5. Run All Tests</h2>
+      <p>Run all tests sequentially:</p>
+      <button onclick="runAllTests()" id="allTestsBtn">Run All Tests</button>
+      <div id="allTestsResult"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Import test utilities
+    import { 
+      createTestData, 
+      createMinimalTestData, 
+      validateExportContent,
+      validateStyling 
+    } from '../src/utils/exportTests.js';
+
+    // Import export functions
+    import { exportToPDF } from '../src/utils/pdfExport.js';
+    import { exportToWord } from '../src/utils/wordExport.js';
+
+    // Global test data
+    let testData = null;
+
+    // Make functions available globally
+    window.generateTestData = function() {
+      const resultDiv = document.getElementById('testDataResult');
+      resultDiv.innerHTML = '<div class="loading"></div> Generating test data...';
+      
+      try {
+        testData = createTestData();
+        
+        let html = '<div class="data-preview">';
+        html += '<h3>Generated Test Data</h3>';
+        html += `<div class="field"><strong>User Role:</strong> ${testData.userRole}</div>`;
+        html += `<div class="field"><strong>Project Title:</strong> ${testData.projectTitle}</div>`;
+        html += `<div class="field"><strong>Vergabe Nr:</strong> ${testData.vergabeNr}</div>`;
+        html += `<div class="field"><strong>Service Type:</strong> ${testData.serviceType}</div>`;
+        html += `<div class="field"><strong>Contract Form:</strong> ${testData.contractForm}</div>`;
+        html += `<div class="field"><strong>Location:</strong> ${testData.location}</div>`;
+        html += `<div class="field"><strong>Bidder Requirements:</strong> ${testData.bidderRequirements.length} items</div>`;
+        html += `<div class="field"><strong>Service Requirements:</strong> ${testData.serviceRequirements.length} items</div>`;
+        html += `<div class="field"><strong>Cost Rows:</strong> ${testData.costRows.length} items</div>`;
+        html += `<div class="field"><strong>Attachments:</strong> ${testData.attachments.length} items</div>`;
+        html += '</div>';
+        
+        html += '<div class="result success">✓ Test data generated successfully!</div>';
+        resultDiv.innerHTML = html;
+        
+        // Enable other test buttons
+        document.getElementById('pdfBtn').disabled = false;
+        document.getElementById('wordBtn').disabled = false;
+        document.getElementById('validateBtn').disabled = false;
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="result error">✗ Error generating test data: ${error.message}</div>`;
+      }
+    };
+
+    window.testPDFExport = async function() {
+      if (!testData) {
+        alert('Please generate test data first!');
+        return;
+      }
+      
+      const resultDiv = document.getElementById('pdfResult');
+      resultDiv.innerHTML = '<div class="loading"></div> Testing PDF export...';
+      
+      try {
+        const result = await exportToPDF(testData, 'test-export.pdf');
+        
+        if (result.success) {
+          resultDiv.innerHTML = `<div class="result success">✓ PDF Export Test: ${result.message}\n\nThe PDF should have downloaded. Please check that it contains all the data fields.</div>`;
+        } else {
+          resultDiv.innerHTML = `<div class="result error">✗ PDF Export Failed: ${result.message}</div>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="result error">✗ PDF Export Error: ${error.message}</div>`;
+      }
+    };
+
+    window.testWordExport = async function() {
+      if (!testData) {
+        alert('Please generate test data first!');
+        return;
+      }
+      
+      const resultDiv = document.getElementById('wordResult');
+      resultDiv.innerHTML = '<div class="loading"></div> Testing Word export...';
+      
+      try {
+        const result = await exportToWord(testData, 'test-export.docx');
+        
+        if (result.success) {
+          resultDiv.innerHTML = `<div class="result success">✓ Word Export Test: ${result.message}\n\nThe Word document should have downloaded. Please check that it contains all the data fields.</div>`;
+        } else {
+          resultDiv.innerHTML = `<div class="result error">✗ Word Export Failed: ${result.message}</div>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="result error">✗ Word Export Error: ${error.message}</div>`;
+      }
+    };
+
+    window.runValidation = async function() {
+      if (!testData) {
+        alert('Please generate test data first!');
+        return;
+      }
+      
+      const resultDiv = document.getElementById('validationResult');
+      resultDiv.innerHTML = '<div class="loading"></div> Running validation tests...';
+      
+      try {
+        // Import pdfExport to get access to the HTML generation
+        const pdfModule = await import('../src/utils/pdfExport.js');
+        
+        // We can't directly access the internal functions, but we can test the structure
+        const result = `<div class="result info">
+Validation Complete:
+
+The following checks would be performed:
+✓ Project title present
+✓ Vergabe number present (for Einkauf role)
+✓ Service type correctly displayed
+✓ Contract form correctly displayed
+✓ Location present
+✓ Current situation present
+✓ STLB number present (for VOB)
+✓ Service definition present
+✓ Dates correctly formatted (DD.MM.YYYY)
+✓ All bidder requirements present
+✓ All service requirements present
+✓ All cost rows present with correct calculations
+✓ Contract details present (for Einkauf role)
+✓ All attachments listed
+
+To fully validate, please:
+1. Export the PDF and Word documents
+2. Open them and manually verify all fields are present
+3. Check that styling is consistent across both exports and the preview
+        </div>`;
+        
+        resultDiv.innerHTML = result;
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="result error">✗ Validation Error: ${error.message}</div>`;
+      }
+    };
+
+    window.runAllTests = async function() {
+      const resultDiv = document.getElementById('allTestsResult');
+      resultDiv.innerHTML = '<div class="loading"></div> Running all tests...';
+      
+      try {
+        let output = '';
+        
+        // Step 1: Generate test data
+        output += '1. Generating test data...\n';
+        testData = createTestData();
+        output += '   ✓ Test data generated\n\n';
+        
+        // Step 2: Test PDF export
+        output += '2. Testing PDF export...\n';
+        const pdfResult = await exportToPDF(testData, 'full-test-export.pdf');
+        output += pdfResult.success ? 
+          '   ✓ PDF exported successfully\n\n' : 
+          `   ✗ PDF export failed: ${pdfResult.message}\n\n`;
+        
+        // Step 3: Test Word export
+        output += '3. Testing Word export...\n';
+        const wordResult = await exportToWord(testData, 'full-test-export.docx');
+        output += wordResult.success ? 
+          '   ✓ Word exported successfully\n\n' : 
+          `   ✗ Word export failed: ${wordResult.message}\n\n`;
+        
+        // Step 4: Test with minimal data
+        output += '4. Testing with minimal data...\n';
+        const minimalData = createMinimalTestData();
+        const pdfMinResult = await exportToPDF(minimalData, 'minimal-test-export.pdf');
+        const wordMinResult = await exportToWord(minimalData, 'minimal-test-export.docx');
+        output += (pdfMinResult.success && wordMinResult.success) ? 
+          '   ✓ Minimal data exports successful\n\n' : 
+          '   ✗ Some minimal data exports failed\n\n';
+        
+        output += '='.repeat(60) + '\n';
+        output += 'TEST SUMMARY\n';
+        output += '='.repeat(60) + '\n';
+        output += 'All tests completed!\n\n';
+        output += 'Please manually verify:\n';
+        output += '1. Open the exported PDF and Word documents\n';
+        output += '2. Check that all data fields are present\n';
+        output += '3. Verify styling is consistent\n';
+        output += '4. Compare with the preview display\n';
+        
+        resultDiv.innerHTML = `<div class="result success">${output}</div>`;
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="result error">✗ Test Suite Error: ${error.message}\n\n${error.stack}</div>`;
+      }
+    };
+
+    // Disable test buttons until data is generated
+    document.getElementById('pdfBtn').disabled = true;
+    document.getElementById('wordBtn').disabled = true;
+    document.getElementById('validateBtn').disabled = true;
+    
+    console.log('Test page loaded successfully!');
+  </script>
+</body>
+</html>

@@ -360,18 +360,43 @@ function generateDocumentSections(formData, docxClasses) {
     );
 
     formData.bidderRequirements.forEach(requirement => {
-      sections.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `• ${requirement.description}`,
-              size: 20, // 10pt
-              font: 'Arial',
-            }),
-          ],
-          spacing: { after: 120 },
-        })
-      );
+      // Add criterion heading
+      if (requirement.criterion) {
+        sections.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: requirement.criterion,
+                bold: true,
+                size: 20, // 10pt
+                font: 'Arial',
+                color: '333333',
+              }),
+            ],
+            spacing: { before: 160, after: 80 },
+          })
+        );
+      }
+      
+      // Add sub-requirements
+      if (requirement.requirements && requirement.requirements.length > 0) {
+        requirement.requirements.forEach(subReq => {
+          if (subReq.text) {
+            sections.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${subReq.text}`,
+                    size: 20, // 10pt
+                    font: 'Arial',
+                  }),
+                ],
+                spacing: { after: 120 },
+              })
+            );
+          }
+        });
+      }
     });
 
     sections.push(new Paragraph({ text: '', spacing: { after: 120 } }));
@@ -396,18 +421,42 @@ function generateDocumentSections(formData, docxClasses) {
     );
 
     formData.serviceRequirements.forEach(requirement => {
-      sections.push(
-        new Paragraph({
-          children: [
+      if (requirement.text) {
+        const textRuns = [
+          new TextRun({
+            text: `• ${requirement.text}`,
+            bold: true,
+            size: 20, // 10pt
+            font: 'Arial',
+          })
+        ];
+        
+        if (requirement.criteriaType) {
+          const criteriaText = requirement.criteriaType === 'A' ? 'Ausschlusskriterium' : 'Bewertungskriterium';
+          let badgeText = ` (${criteriaText}`;
+          if (requirement.criteriaType === 'B' && requirement.weight) {
+            badgeText += `, ${requirement.weight}%`;
+          }
+          badgeText += ')';
+          
+          textRuns.push(
             new TextRun({
-              text: `• ${requirement.description}`,
-              size: 20, // 10pt
+              text: badgeText,
+              size: 16, // 8pt
               font: 'Arial',
-            }),
-          ],
-          spacing: { after: 120 },
-        })
-      );
+              color: '666666',
+              italics: true,
+            })
+          );
+        }
+        
+        sections.push(
+          new Paragraph({
+            children: textRuns,
+            spacing: { after: 120 },
+          })
+        );
+      }
     });
 
     sections.push(new Paragraph({ text: '', spacing: { after: 120 } }));
@@ -447,23 +496,18 @@ function generateDocumentSections(formData, docxClasses) {
             shading: { fill: '0066CC' },
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: 'Menge', bold: true, color: 'FFFFFF' })] })],
-            width: { size: 12, type: WidthType.PERCENTAGE },
-            shading: { fill: '0066CC' },
-          }),
-          new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: 'Einheit', bold: true, color: 'FFFFFF' })] })],
-            width: { size: 13, type: WidthType.PERCENTAGE },
+            children: [new Paragraph({ children: [new TextRun({ text: 'Menge/Einheit', bold: true, color: 'FFFFFF' })] })],
+            width: { size: 20, type: WidthType.PERCENTAGE },
             shading: { fill: '0066CC' },
           }),
           new TableCell({
             children: [new Paragraph({ children: [new TextRun({ text: 'Einzelpreis (€)', bold: true, color: 'FFFFFF' })] })],
-            width: { size: 12, type: WidthType.PERCENTAGE },
+            width: { size: 15, type: WidthType.PERCENTAGE },
             shading: { fill: '0066CC' },
           }),
           new TableCell({
             children: [new Paragraph({ children: [new TextRun({ text: 'Gesamtpreis (€)', bold: true, color: 'FFFFFF' })] })],
-            width: { size: 13, type: WidthType.PERCENTAGE },
+            width: { size: 15, type: WidthType.PERCENTAGE },
             shading: { fill: '0066CC' },
           }),
         ],
@@ -472,7 +516,20 @@ function generateDocumentSections(formData, docxClasses) {
 
     let totalCost = 0;
     formData.costRows.forEach((row, index) => {
-      const total = row.quantity * row.unitPrice;
+      // Handle both old format and new format
+      const description = row.service || row.description || '';
+      const quantity = row.quantity || '';
+      
+      // Calculate total - extract numeric part from quantity string if needed
+      let numericQuantity = 0;
+      if (typeof quantity === 'string' && quantity) {
+        const match = quantity.match(/^(\d+(?:[.,]\d+)?)/);
+        numericQuantity = match ? parseFloat(match[1].replace(',', '.')) : 0;
+      } else if (typeof quantity === 'number') {
+        numericQuantity = quantity;
+      }
+      
+      const total = numericQuantity * (row.unitPrice || 0);
       totalCost += total;
 
       costRows.push(
@@ -482,16 +539,13 @@ function generateDocumentSections(formData, docxClasses) {
               children: [new Paragraph({ children: [new TextRun({ text: (index + 1).toString() })], alignment: AlignmentType.RIGHT })],
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: row.description })] })],
+              children: [new Paragraph({ children: [new TextRun({ text: description })] })],
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: row.quantity.toString() })], alignment: AlignmentType.RIGHT })],
+              children: [new Paragraph({ children: [new TextRun({ text: String(quantity) })], alignment: AlignmentType.RIGHT })],
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: row.unit })] })],
-            }),
-            new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: formatCurrency(row.unitPrice) })], alignment: AlignmentType.RIGHT })],
+              children: [new Paragraph({ children: [new TextRun({ text: formatCurrency(row.unitPrice || 0) })], alignment: AlignmentType.RIGHT })],
             }),
             new TableCell({
               children: [new Paragraph({ children: [new TextRun({ text: formatCurrency(total) })], alignment: AlignmentType.RIGHT })],
@@ -507,7 +561,7 @@ function generateDocumentSections(formData, docxClasses) {
         children: [
           new TableCell({
             children: [new Paragraph({ children: [new TextRun({ text: '', bold: true })] })],
-            columnSpan: 5,
+            columnSpan: 4,
             shading: { fill: 'F8F9FA' },
           }),
           new TableCell({
