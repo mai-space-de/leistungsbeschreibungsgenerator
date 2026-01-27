@@ -221,7 +221,8 @@ export default {
     getContractFormText(contractForm) {
       const forms = {
         'einzelauftrag': 'Einzelauftrag',
-        'rahmenvereinbarung': 'Rahmenvereinbarung'
+        'rahmenvereinbarung': 'Rahmenvereinbarung',
+        'kauf': 'Kauf'
       };
       return forms[contractForm] || contractForm;
     },

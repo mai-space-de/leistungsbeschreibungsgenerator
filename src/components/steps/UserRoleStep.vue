@@ -93,6 +93,7 @@
           <option value="">Bitte wählen...</option>
           <option value="einzelauftrag">Einzelauftrag</option>
           <option value="rahmenvereinbarung">Rahmenvereinbarung</option>
+          <option value="kauf">Kauf</option>
         </select>
       </div>
 

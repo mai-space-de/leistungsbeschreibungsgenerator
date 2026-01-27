@@ -126,7 +126,8 @@ export function validateExportContent(content, testData) {
   if (testData.contractForm) {
     const contractFormTexts = {
       'einzelauftrag': 'Einzelauftrag',
-      'rahmenvereinbarung': 'Rahmenvereinbarung'
+      'rahmenvereinbarung': 'Rahmenvereinbarung',
+      'kauf': 'Kauf'
     };
     if (!content.includes(contractFormTexts[testData.contractForm])) {
       issues.push(`Missing or incorrect contractForm: ${testData.contractForm}`);
