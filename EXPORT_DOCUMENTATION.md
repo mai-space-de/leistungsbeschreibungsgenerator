@@ -6,7 +6,7 @@ Die Leistungsbeschreibung Generator App verfügt über integrierte Export-Funkti
 
 ## Verwendete Bibliotheken
 
-- **PDF-Export**: `html2pdf.js` v0.14.0
+- **PDF-Export**: `jsPDF` v2.5.2 and `html2canvas` v1.4.1
 - **Word-Export**: `docx` v9.5.1
 - **Datei-Download**: `file-saver` v2.0.5
 
@@ -164,7 +164,7 @@ Beide Export-Funktionen implementieren umfassende Fehlerbehandlung:
 
 ## Browser-Kompatibilität
 
-**PDF-Export (html2pdf.js):**
+**PDF-Export (jsPDF + html2canvas):**
 - Chrome: ✅ Vollständig unterstützt
 - Firefox: ✅ Vollständig unterstützt
 - Safari: ✅ Unterstützt (iOS 12+)
@@ -248,7 +248,7 @@ const minimalResults = await testMinimalExport();
 
 ### PDF-Export funktioniert nicht
 1. Überprüfen Sie die Browser-Konsole auf JavaScript-Fehler
-2. Stellen Sie sicher, dass html2pdf.js korrekt geladen wurde
+2. Stellen Sie sicher, dass jsPDF und html2canvas korrekt geladen wurden
 3. Prüfen Sie, ob Pop-up-Blocker den Download verhindern
 
 ### Word-Export funktioniert nicht

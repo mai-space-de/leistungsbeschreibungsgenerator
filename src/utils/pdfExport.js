@@ -1,51 +1,89 @@
-// Use html2pdf from CDN (loaded in index.html)
+// Use jsPDF and html2canvas from CDN (loaded in index.html)
 // DO NOT import from npm packages - this breaks the single-file webpack build
-// Access via window.html2pdf global
+// Access via window.jspdf and window.html2canvas globals
 
 /**
- * Generates PDF from form data using html2pdf.js from CDN
+ * Generates PDF from form data using jsPDF and html2canvas from CDN
  * @param {Object} formData - The form data to export
  * @param {String} filename - Optional filename for the PDF
  */
 export async function exportToPDF(formData, filename = 'Leistungsbeschreibung.pdf') {
-  // Check if html2pdf is available from CDN
-  if (!window.html2pdf) {
-    throw new Error('html2pdf library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
+  // Check if jsPDF and html2canvas are available from CDN
+  if (!window.jspdf) {
+    throw new Error('jsPDF library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
+  }
+  if (!window.html2canvas) {
+    throw new Error('html2canvas library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
   }
 
-  const html2pdf = window.html2pdf;
+  const { jsPDF } = window.jspdf;
+  const html2canvas = window.html2canvas;
 
   try {
     // Create HTML content for PDF
     const htmlContent = generateHTMLContent(formData);
     
-    // PDF options
-    const options = {
-      margin: [25, 25, 25, 25], // Top, right, bottom, left margins in mm
-      filename: filename,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
-        scale: 2,
-        useCORS: true,
-        letterRendering: true,
-        allowTaint: true
-      },
-      jsPDF: { 
-        unit: 'mm', 
-        format: 'a4', 
-        orientation: 'portrait',
-        putTotalPages: true
-      },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
     // Generate and download PDF
     const element = document.createElement('div');
     element.innerHTML = htmlContent;
-    element.style.display = 'none';
+    element.style.display = 'block';
+    element.style.position = 'absolute';
+    element.style.left = '-9999px';
+    element.style.top = '0';
+    element.style.width = '210mm'; // A4 width
     document.body.appendChild(element);
 
-    await html2pdf().set(options).from(element).save();
+    // Wait for any fonts or styles to load
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Convert HTML to canvas
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      letterRendering: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      logging: false,
+      windowWidth: 794, // A4 width in pixels at 96 DPI (210mm)
+      windowHeight: element.scrollHeight
+    });
+    
+    // Calculate PDF dimensions
+    const imgWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    
+    // Create PDF
+    const pdf = new jsPDF({
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait'
+    });
+    
+    const margins = 25; // 25mm margins
+    const contentWidth = imgWidth - (2 * margins);
+    const contentHeight = pageHeight - (2 * margins);
+    
+    let position = 0;
+    
+    // Add image to PDF (with proper margins)
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    
+    // First page
+    pdf.addImage(imgData, 'JPEG', margins, margins, contentWidth, (imgHeight * contentWidth) / imgWidth);
+    heightLeft -= contentHeight;
+    
+    // Add additional pages if content is longer than one page
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', margins, position + margins, contentWidth, (imgHeight * contentWidth) / imgWidth);
+      heightLeft -= contentHeight;
+    }
+    
+    // Save PDF
+    pdf.save(filename);
     
     // Clean up
     document.body.removeChild(element);
