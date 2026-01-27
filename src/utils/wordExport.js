@@ -10,10 +10,10 @@
 export async function exportToWord(formData, filename = 'Leistungsbeschreibung.docx') {
   // Check if docx library is available from CDN
   if (!window.docx) {
-    throw new Error('docx library not loaded from CDN. Please check your internet connection.');
+    throw new Error('docx library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
   }
   if (!window.saveAs) {
-    throw new Error('FileSaver library not loaded from CDN. Please check your internet connection.');
+    throw new Error('FileSaver library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
   }
 
   // Get docx classes from window.docx

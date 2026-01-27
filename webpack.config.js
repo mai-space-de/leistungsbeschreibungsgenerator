@@ -12,13 +12,6 @@ module.exports = (env, argv) => {
       filename: 'app.js',
       clean: true
     },
-    // Externals: Exclude CDN libraries from webpack bundle
-    // These libraries are loaded via <script> tags in index.html
-    externals: {
-      'docx': 'docx',
-      'file-saver': 'saveAs',
-      'html2pdf.js': 'html2pdf'
-    },
     module: {
       rules: [
         {

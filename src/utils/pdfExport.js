@@ -10,7 +10,7 @@
 export async function exportToPDF(formData, filename = 'Leistungsbeschreibung.pdf') {
   // Check if html2pdf is available from CDN
   if (!window.html2pdf) {
-    throw new Error('html2pdf library not loaded from CDN. Please check your internet connection.');
+    throw new Error('html2pdf library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
   }
 
   const html2pdf = window.html2pdf;
