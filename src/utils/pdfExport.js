@@ -1,4 +1,5 @@
-import html2pdf from 'html2pdf.js';
+// html2pdf is loaded globally from CDN
+const html2pdf = window.html2pdf;
 
 /**
  * Generates PDF from form data using html2pdf.js
@@ -6,6 +7,11 @@ import html2pdf from 'html2pdf.js';
  * @param {String} filename - Optional filename for the PDF
  */
 export async function exportToPDF(formData, filename = 'Leistungsbeschreibung.pdf') {
+  // Check if html2pdf is available
+  if (!html2pdf) {
+    throw new Error('html2pdf library not loaded. Please check your internet connection.');
+  }
+
   try {
     // Create HTML content for PDF
     const htmlContent = generateHTMLContent(formData);

@@ -1,5 +1,4 @@
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } from 'docx';
-import { saveAs } from 'file-saver';
+// docx and saveAs are loaded globally from CDN
 
 /**
  * Generates Word document from form data using docx library
@@ -7,6 +6,20 @@ import { saveAs } from 'file-saver';
  * @param {String} filename - Optional filename for the Word document
  */
 export async function exportToWord(formData, filename = 'Leistungsbeschreibung.docx') {
+  // Check if docx and saveAs are available
+  const docx = window.docx;
+  const { saveAs } = window;
+  
+  if (!docx) {
+    throw new Error('docx library not loaded. Please check your internet connection.');
+  }
+  if (!saveAs) {
+    throw new Error('FileSaver library not loaded. Please check your internet connection.');
+  }
+
+  // Destructure docx components after confirming docx is loaded
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = docx;
+
   try {
     // Create document sections
     const sections = generateDocumentSections(formData);
