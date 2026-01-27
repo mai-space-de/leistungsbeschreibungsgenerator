@@ -35,6 +35,17 @@ The following libraries are loaded via CDN in `public/index.html`:
    - CDN: `https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js`
    - Global: `window.html2pdf`
 
+#### Security Considerations
+
+**Note:** The CDN script tags currently do not include Subresource Integrity (SRI) hashes. This is a known limitation. For improved security in production environments, consider:
+
+1. Adding `integrity` and `crossorigin` attributes to the script tags
+2. Generating SRI hashes using tools like https://www.srihash.org/
+3. Hosting the libraries locally instead of using CDN (though this breaks the single-file HTML goal)
+4. Using a trusted CDN with strong security practices
+
+The trade-off here is between the single-file HTML requirement and enhanced security via SRI verification.
+
 ### How It Works
 
 1. CDN libraries are loaded via `<script>` tags in `public/index.html`
