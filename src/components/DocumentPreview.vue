@@ -94,8 +94,7 @@
               <tr>
                 <th>Position</th>
                 <th>Beschreibung</th>
-                <th>Menge</th>
-                <th>Einheit</th>
+                <th>Menge/Einheit</th>
                 <th>Einzelpreis (€)</th>
                 <th>Gesamtpreis (€)</th>
               </tr>
@@ -103,14 +102,13 @@
             <tbody>
               <tr v-for="(row, index) in formData.costRows" :key="index">
                 <td class="number">{{ index + 1 }}</td>
-                <td>{{ row.description }}</td>
-                <td class="number">{{ row.quantity }}</td>
-                <td>{{ row.unit }}</td>
+                <td>{{ row.service ||  row.description || '' }}</td>
+                <td class="number">{{ formatQuantity(row) }}</td>
                 <td class="number">{{ formatCurrency(row.unitPrice) }}</td>
-                <td class="number">{{ formatCurrency(row.quantity * row.unitPrice) }}</td>
+                <td class="number">{{ formatCurrency(calculateRowTotal(row)) }}</td>
               </tr>
               <tr class="total-row">
-                <td colspan="5"><strong>Gesamtsumme</strong></td>
+                <td colspan="4"><strong>Gesamtsumme</strong></td>
                 <td class="number"><strong>{{ formatCurrency(calculateTotal()) }}</strong></td>
               </tr>
             </tbody>
@@ -183,10 +181,32 @@ export default {
       }).format(value);
     },
     
+    formatQuantity(row) {
+      // Handle both old format (quantity + unit) and new format (quantity string)
+      if (row.quantity && row.unit) {
+        return `${row.quantity} ${row.unit}`;
+      } else if (row.quantity) {
+        return row.quantity;
+      }
+      return '';
+    },
+    
+    calculateRowTotal(row) {
+      // For new format, quantity is a string, so we need to parse it
+      if (typeof row.quantity === 'string') {
+        // Extract numeric part from quantity string like "40 Std" or "1 Los"
+        const match = row.quantity.match(/^(\d+(?:[.,]\d+)?)/);
+        const quantity = match ? parseFloat(match[1].replace(',', '.')) : 0;
+        return quantity * (row.unitPrice || 0);
+      }
+      // For old format, quantity is a number
+      return (row.quantity || 0) * (row.unitPrice || 0);
+    },
+    
     calculateTotal() {
       if (!this.formData.costRows || this.formData.costRows.length === 0) return 0;
       return this.formData.costRows.reduce((total, row) => {
-        return total + (row.quantity * row.unitPrice);
+        return total + this.calculateRowTotal(row);
       }, 0);
     },
     

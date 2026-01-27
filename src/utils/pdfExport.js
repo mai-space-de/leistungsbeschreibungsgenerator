@@ -413,8 +413,7 @@ function generateDocumentContent(formData) {
             <tr>
               <th>Position</th>
               <th>Beschreibung</th>
-              <th>Menge</th>
-              <th>Einheit</th>
+              <th>Menge/Einheit</th>
               <th>Einzelpreis (€)</th>
               <th>Gesamtpreis (€)</th>
             </tr>
@@ -424,16 +423,28 @@ function generateDocumentContent(formData) {
     
     let totalCost = 0;
     formData.costRows.forEach((row, index) => {
-      const total = row.quantity * row.unitPrice;
+      // Handle both old format and new format
+      const description = row.service || row.description || '';
+      const quantity = row.quantity || '';
+      
+      // Calculate total - extract numeric part from quantity string if needed
+      let numericQuantity = 0;
+      if (typeof quantity === 'string') {
+        const match = quantity.match(/^(\d+(?:[.,]\d+)?)/);
+        numericQuantity = match ? parseFloat(match[1].replace(',', '.')) : 0;
+      } else {
+        numericQuantity = quantity || 0;
+      }
+      
+      const total = numericQuantity * (row.unitPrice || 0);
       totalCost += total;
       
       content += `
         <tr>
           <td class="number">${index + 1}</td>
-          <td>${row.description}</td>
-          <td class="number">${row.quantity}</td>
-          <td>${row.unit}</td>
-          <td class="number">${formatCurrency(row.unitPrice)}</td>
+          <td>${description}</td>
+          <td class="number">${quantity}</td>
+          <td class="number">${formatCurrency(row.unitPrice || 0)}</td>
           <td class="number">${formatCurrency(total)}</td>
         </tr>
       `;
@@ -441,7 +452,7 @@ function generateDocumentContent(formData) {
     
     content += `
             <tr>
-              <th colspan="5">Gesamtsumme</th>
+              <th colspan="4">Gesamtsumme</th>
               <th class="number">${formatCurrency(totalCost)}</th>
             </tr>
           </tbody>
