@@ -95,11 +95,6 @@ module.exports = (env, argv) => {
         })()
       ] : [])
     ],
-    externals: {
-      'html2pdf.js': 'html2pdf',
-      'docx': 'docx',
-      'file-saver': 'saveAs'
-    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src')

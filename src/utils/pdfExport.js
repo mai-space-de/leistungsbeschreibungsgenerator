@@ -1,5 +1,5 @@
-// html2pdf is loaded globally from CDN
-const html2pdf = window.html2pdf;
+// Import html2pdf from npm package
+import html2pdf from 'html2pdf.js';
 
 /**
  * Generates PDF from form data using html2pdf.js
