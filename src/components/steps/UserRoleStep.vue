@@ -3,7 +3,7 @@
     <div class="card-header">1. Nutzerrolle und Grunddaten</div>
     <div class="card-content">
       <!-- User Role Selection -->
-      <div class="form-group">
+      <div class="form-group" :class="{ 'has-error': validationErrors.userRole }">
         <label class="section-label">Ich arbeite in:</label>
         <div class="radio-group">
           <div class="radio-option">
@@ -27,10 +27,11 @@
             <label for="role-einkauf">Einkauf</label>
           </div>
         </div>
+        <div v-if="validationErrors.userRole" class="error-message">{{ validationErrors.userRole }}</div>
       </div>
 
       <!-- Project Title -->
-      <div class="form-group">
+      <div class="form-group" :class="{ 'has-error': validationErrors.projectTitle }">
         <label for="project-title">
           Titel der Leistungsbeschreibung:
           <span class="tooltip-wrapper">
@@ -45,10 +46,11 @@
           @input="updateField('projectTitle', $event.target.value)"
           placeholder="Geben Sie den Titel der Leistungsbeschreibung ein"
         />
+        <div v-if="validationErrors.projectTitle" class="error-message">{{ validationErrors.projectTitle }}</div>
       </div>
 
       <!-- Vergabe Number (only for Einkauf) -->
-      <div v-if="formData.userRole === 'einkauf'" class="form-group">
+      <div v-if="formData.userRole === 'einkauf'" class="form-group" :class="{ 'has-error': validationErrors.vergabeNr }">
         <label for="vergabe-nr">Vergabenummer:</label>
         <input 
           type="text" 
@@ -57,10 +59,11 @@
           @input="updateField('vergabeNr', $event.target.value)"
           placeholder="z.B. 2024-001"
         />
+        <div v-if="validationErrors.vergabeNr" class="error-message">{{ validationErrors.vergabeNr }}</div>
       </div>
 
       <!-- Service Type -->
-      <div class="form-group">
+      <div class="form-group" :class="{ 'has-error': validationErrors.serviceType }">
         <label for="service-type">Leistungsart:</label>
         <select 
           id="service-type" 
@@ -71,10 +74,11 @@
           <option value="vob">Bauleistung (VOB)</option>
           <option value="vol">Liefer-/Dienstleistung (VOL)</option>
         </select>
+        <div v-if="validationErrors.serviceType" class="error-message">{{ validationErrors.serviceType }}</div>
       </div>
 
       <!-- Contract Form -->
-      <div class="form-group">
+      <div class="form-group" :class="{ 'has-error': validationErrors.contractForm }">
         <label for="contract-form">
           Vertragsform:
           <span class="tooltip-wrapper">
@@ -95,10 +99,11 @@
           <option value="rahmenvereinbarung">Rahmenvereinbarung</option>
           <option value="kauf">Kauf</option>
         </select>
+        <div v-if="validationErrors.contractForm" class="error-message">{{ validationErrors.contractForm }}</div>
       </div>
 
       <!-- Location (Ist-Zustand) -->
-      <div class="form-group">
+      <div class="form-group" :class="{ 'has-error': validationErrors.location }">
         <label for="location">
           Leistungsort:
           <span class="tooltip-wrapper">
@@ -113,6 +118,7 @@
           @input="updateField('location', $event.target.value)"
           placeholder="Geben Sie den Leistungsort ein"
         />
+        <div v-if="validationErrors.location" class="error-message">{{ validationErrors.location }}</div>
       </div>
 
       <!-- Current Situation Description -->
@@ -146,6 +152,30 @@ export default {
     }
   },
   emits: ['update-field'],
+  computed: {
+    validationErrors() {
+      const errors = {};
+      if (!this.formData.userRole) {
+        errors.userRole = 'Bitte wählen Sie Ihre Rolle aus';
+      }
+      if (!this.formData.projectTitle) {
+        errors.projectTitle = 'Projekttitel ist erforderlich';
+      }
+      if (!this.formData.serviceType) {
+        errors.serviceType = 'Leistungsart ist erforderlich';
+      }
+      if (!this.formData.contractForm) {
+        errors.contractForm = 'Vertragsform ist erforderlich';
+      }
+      if (!this.formData.location) {
+        errors.location = 'Leistungsort ist erforderlich';
+      }
+      if (this.formData.userRole === 'einkauf' && !this.formData.vergabeNr) {
+        errors.vergabeNr = 'Vergabenummer ist für Einkauf erforderlich';
+      }
+      return errors;
+    }
+  },
   methods: {
     updateField(field, value) {
       this.$emit('update-field', { field, value });
@@ -179,6 +209,32 @@ export default {
 
 .form-group {
   margin-bottom: 20px;
+}
+
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea {
+  border-color: #dc3545;
+}
+
+.form-group.has-error input:focus,
+.form-group.has-error select:focus,
+.form-group.has-error textarea:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.error-message::before {
+  content: "⚠ ";
+  margin-right: 4px;
 }
 
 .section-label {

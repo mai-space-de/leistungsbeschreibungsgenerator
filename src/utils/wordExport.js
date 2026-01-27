@@ -1,21 +1,6 @@
-// docx and saveAs are loaded globally from CDN
-
-/**
- * Wait for CDN libraries to load with retry mechanism
- * @param {number} maxRetries - Maximum number of retry attempts
- * @param {number} delay - Delay between retries in ms
- */
-async function waitForLibraries(maxRetries = 10, delay = 100) {
-  for (let i = 0; i < maxRetries; i++) {
-    if (window.docx && window.saveAs) {
-      console.log('Libraries loaded successfully');
-      console.log('docx structure:', Object.keys(window.docx));
-      return { docx: window.docx, saveAs: window.saveAs };
-    }
-    await new Promise(resolve => setTimeout(resolve, delay));
-  }
-  throw new Error('docx library not loaded. Please check your internet connection.');
-}
+// Import docx and saveAs from npm packages
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } from 'docx';
+import { saveAs } from 'file-saver';
 
 /**
  * Generates Word document from form data using docx library
@@ -24,45 +9,6 @@ async function waitForLibraries(maxRetries = 10, delay = 100) {
  */
 export async function exportToWord(formData, filename = 'Leistungsbeschreibung.docx') {
   try {
-    // Wait for libraries to be available
-    const { docx, saveAs } = await waitForLibraries();
-
-    // Check the structure of the docx object and extract classes
-    let Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType;
-    
-    // Different ways the IIFE build might expose classes
-    if (docx.Document) {
-      // Direct access (newer versions)
-      ({ Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = docx);
-    } else if (docx.default && docx.default.Document) {
-      // Through default export
-      ({ Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = docx.default);
-    } else {
-      // Manual assignment for older IIFE builds
-      Document = docx.Document || window.docx?.Document;
-      Packer = docx.Packer || window.docx?.Packer;
-      Paragraph = docx.Paragraph || window.docx?.Paragraph;
-      TextRun = docx.TextRun || window.docx?.TextRun;
-      HeadingLevel = docx.HeadingLevel || window.docx?.HeadingLevel;
-      Table = docx.Table || window.docx?.Table;
-      TableRow = docx.TableRow || window.docx?.TableRow;
-      TableCell = docx.TableCell || window.docx?.TableCell;
-      WidthType = docx.WidthType || window.docx?.WidthType;
-      BorderStyle = docx.BorderStyle || window.docx?.BorderStyle;
-      AlignmentType = docx.AlignmentType || window.docx?.AlignmentType;
-      UnderlineType = docx.UnderlineType || window.docx?.UnderlineType;
-    }
-    
-    // Verify that we have the required classes
-    if (!Document || !Paragraph || !TextRun) {
-      console.error('Missing required docx classes:', { Document, Paragraph, TextRun });
-      console.error('Available docx properties:', Object.keys(docx));
-      console.error('window.docx properties:', window.docx ? Object.keys(window.docx) : 'window.docx not found');
-      throw new Error('Required docx classes not found. Please check the docx library loading.');
-    }
-    
-    console.log('Successfully loaded docx classes');
-
     // Create document sections
     const sections = generateDocumentSections(formData, { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType });
     
