@@ -1,13 +1,17 @@
 <template>
   <div class="card">
-    <div class="card-header">2. Leistungsumfang</div>
+    <div class="card-header">Legacy: Leistungsumfang (zusätzlich)</div>
     <div class="card-content">
+      <div class="info-box">
+        <strong>Hinweis:</strong> Diese Felder sind als zusätzliche Ergänzung gedacht. Die wichtigsten Informationen wurden bereits in den vorherigen Schritten erfasst.
+      </div>
+      
       <div class="form-group">
         <label for="ist-zustand">Ist-Zustand (Punkt 1):</label>
         <textarea 
           id="ist-zustand" 
-          :value="formData.istZustand"
-          @input="updateField('istZustand', $event.target.value)"
+          :value="formData.currentSituation"
+          @input="updateField('currentSituation', $event.target.value)"
           placeholder="Beschreibung der aktuellen Situation..."
           rows="4"
         ></textarea>
@@ -39,8 +43,8 @@
         <label for="ziel-zustand">Ziel-Zustand (Punkt 3):</label>
         <textarea 
           id="ziel-zustand" 
-          :value="formData.zielZustand"
-          @input="updateField('zielZustand', $event.target.value)"
+          :value="formData.targetState"
+          @input="updateField('targetState', $event.target.value)"
           placeholder="Beschreibung des gewünschten Ergebnisses..."
           rows="4"
         ></textarea>
@@ -51,8 +55,8 @@
         <input 
           type="text" 
           id="leistungszeitraum" 
-          :value="formData.leistungszeitraum"
-          @input="updateField('leistungszeitraum', $event.target.value)"
+          :value="formData.servicePeriod"
+          @input="updateField('servicePeriod', $event.target.value)"
           placeholder="Nach Vereinbarung"
         />
       </div>
@@ -134,5 +138,15 @@ export default {
 .form-group textarea {
   resize: vertical;
   min-height: 80px;
+}
+
+.info-box {
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  color: #1565c0;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
 }
 </style>

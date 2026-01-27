@@ -19,20 +19,44 @@
         </div>
 
         <!-- Step Components -->
-        <BasicDataStep
+        <UserRoleStep
           v-if="currentStep === 1"
           :form-data="formData"
           @update-field="updateField"
         />
 
-        <ScopeStep
+        <ServiceDefinitionStep
           v-if="currentStep === 2"
           :form-data="formData"
           @update-field="updateField"
         />
 
-        <TimelineResourcesStep
+        <BidderRequirementsStep
           v-if="currentStep === 3"
+          :form-data="formData"
+          @update-field="updateField"
+        />
+
+        <ServiceRequirementsStep
+          v-if="currentStep === 4"
+          :form-data="formData"
+          @update-field="updateField"
+        />
+
+        <CostStructureStep
+          v-if="currentStep === 5"
+          :form-data="formData"
+          @update-field="updateField"
+        />
+
+        <ContractDetailsStep
+          v-if="currentStep === 6"
+          :form-data="formData"
+          @update-field="updateField"
+        />
+
+        <AttachmentsStep
+          v-if="currentStep === 7"
           :form-data="formData"
           @update-field="updateField"
         />
@@ -41,6 +65,7 @@
         <StepNavigation
           :current-step="currentStep"
           :total-steps="totalSteps"
+          :form-data="formData"
           @previous-step="previousStep"
           @next-step="nextStep"
           @generate-document="generateDocument"
@@ -59,9 +84,13 @@
 
 <script>
 import HeaderBar from './components/HeaderBar.vue'
-import BasicDataStep from './components/steps/BasicDataStep.vue'
-import ScopeStep from './components/steps/ScopeStep.vue'
-import TimelineResourcesStep from './components/steps/TimelineResourcesStep.vue'
+import UserRoleStep from './components/steps/UserRoleStep.vue'
+import ServiceDefinitionStep from './components/steps/ServiceDefinitionStep.vue'
+import BidderRequirementsStep from './components/steps/BidderRequirementsStep.vue'
+import ServiceRequirementsStep from './components/steps/ServiceRequirementsStep.vue'
+import CostStructureStep from './components/steps/CostStructureStep.vue'
+import ContractDetailsStep from './components/steps/ContractDetailsStep.vue'
+import AttachmentsStep from './components/steps/AttachmentsStep.vue'
 import StepNavigation from './components/StepNavigation.vue'
 import DocumentPreview from './components/DocumentPreview.vue'
 
@@ -69,37 +98,72 @@ export default {
   name: 'App',
   components: {
     HeaderBar,
-    BasicDataStep,
-    ScopeStep,
-    TimelineResourcesStep,
+    UserRoleStep,
+    ServiceDefinitionStep,
+    BidderRequirementsStep,
+    ServiceRequirementsStep,
+    CostStructureStep,
+    ContractDetailsStep,
+    AttachmentsStep,
     StepNavigation,
     DocumentPreview
   },
   data() {
     return {
       currentStep: 1,
-      totalSteps: 3,
+      totalSteps: 7,
       showPreview: false,
       errorMessage: '',
       resizeObserver: null,
       headerHeight: 70,
       formData: {
+        // User Role and Basic Data (Step 1)
+        userRole: '',
         projectTitle: '',
-        projectDescription: '',
-        clientName: '',
         vergabeNr: '',
-        category: 'bau',
-        contractType: 'einzel',
-        istZustand: '',
-        scopeDescription: '',
-        deliverables: '',
-        zielZustand: '',
-        leistungszeitraum: 'Nach Vereinbarung',
+        serviceType: '',
+        contractForm: '',
+        location: '',
+        currentSituation: '',
+        
+        // Service Definition (Step 2)
+        stlbNumber: '',
+        serviceDefinition: '',
         startDate: '',
         endDate: '',
-        resources: '',
-        budget: '',
-        milestones: ''
+        
+        // Bidder Requirements (Step 3)
+        bidderRequirements: [],
+        
+        // Service Requirements (Step 4)
+        serviceRequirements: [],
+        
+        // Cost Structure (Step 5)
+        costRows: [],
+        
+        // Contract Details (Step 6) - Einkauf only
+        contractVolume: 0,
+        contractDuration: 1,
+        contractTerms: '',
+        paymentTerms: '',
+        customPaymentTerms: '',
+        warrantyPeriod: '',
+        customWarranty: 12,
+        contactPerson: '',
+        contactEmail: '',
+        contactPhone: '',
+        guidelinesUnderstood: false,
+        equalTreatment: false,
+        transparency: false,
+        
+        // Attachments (Step 7)
+        attachments: [],
+        
+        // Legacy fields for backward compatibility
+        scopeDescription: '',
+        deliverables: '',
+        targetState: '',
+        servicePeriod: 'Nach Vereinbarung'
       }
     }
   },
@@ -143,22 +207,53 @@ export default {
       if (confirm('Möchten Sie wirklich alle Eingaben löschen und von vorne beginnen?')) {
         localStorage.removeItem('leistungsbeschreibung-data');
         this.formData = {
+          // User Role and Basic Data (Step 1)
+          userRole: '',
           projectTitle: '',
-          projectDescription: '',
-          clientName: '',
           vergabeNr: '',
-          category: 'bau',
-          contractType: 'einzel',
-          istZustand: '',
-          scopeDescription: '',
-          deliverables: '',
-          zielZustand: '',
-          leistungszeitraum: 'Nach Vereinbarung',
+          serviceType: '',
+          contractForm: '',
+          location: '',
+          currentSituation: '',
+          
+          // Service Definition (Step 2)
+          stlbNumber: '',
+          serviceDefinition: '',
           startDate: '',
           endDate: '',
-          resources: '',
-          budget: '',
-          milestones: ''
+          
+          // Bidder Requirements (Step 3)
+          bidderRequirements: [],
+          
+          // Service Requirements (Step 4)
+          serviceRequirements: [],
+          
+          // Cost Structure (Step 5)
+          costRows: [],
+          
+          // Contract Details (Step 6) - Einkauf only
+          contractVolume: 0,
+          contractDuration: 1,
+          contractTerms: '',
+          paymentTerms: '',
+          customPaymentTerms: '',
+          warrantyPeriod: '',
+          customWarranty: 12,
+          contactPerson: '',
+          contactEmail: '',
+          contactPhone: '',
+          guidelinesUnderstood: false,
+          equalTreatment: false,
+          transparency: false,
+          
+          // Attachments (Step 7)
+          attachments: [],
+          
+          // Legacy fields for backward compatibility
+          scopeDescription: '',
+          deliverables: '',
+          targetState: '',
+          servicePeriod: 'Nach Vereinbarung'
         };
         this.currentStep = 1;
         this.showPreview = false;
@@ -173,12 +268,22 @@ export default {
     nextStep() {
       if (this.currentStep < this.totalSteps) {
         this.currentStep++;
+        
+        // Skip step 6 (Contract Details) if user is not Einkauf
+        if (this.currentStep === 6 && this.formData.userRole !== 'einkauf') {
+          this.currentStep++;
+        }
       }
     },
 
     previousStep() {
       if (this.currentStep > 1) {
         this.currentStep--;
+        
+        // Skip step 6 (Contract Details) if user is not Einkauf when going backwards
+        if (this.currentStep === 6 && this.formData.userRole !== 'einkauf') {
+          this.currentStep--;
+        }
       }
     },
 
