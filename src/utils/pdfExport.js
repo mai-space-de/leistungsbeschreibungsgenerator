@@ -1,16 +1,19 @@
-// Import html2pdf from npm package
-import html2pdf from 'html2pdf.js';
+// Use html2pdf from CDN (loaded in index.html)
+// DO NOT import from npm packages - this breaks the single-file webpack build
+// Access via window.html2pdf global
 
 /**
- * Generates PDF from form data using html2pdf.js
+ * Generates PDF from form data using html2pdf.js from CDN
  * @param {Object} formData - The form data to export
  * @param {String} filename - Optional filename for the PDF
  */
 export async function exportToPDF(formData, filename = 'Leistungsbeschreibung.pdf') {
-  // Check if html2pdf is available
-  if (!html2pdf) {
-    throw new Error('html2pdf library not loaded. Please check your internet connection.');
+  // Check if html2pdf is available from CDN
+  if (!window.html2pdf) {
+    throw new Error('html2pdf library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
   }
+
+  const html2pdf = window.html2pdf;
 
   try {
     // Create HTML content for PDF

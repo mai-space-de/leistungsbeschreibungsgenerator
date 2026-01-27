@@ -1,16 +1,28 @@
-// Import docx and saveAs from npm packages
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } from 'docx';
-import { saveAs } from 'file-saver';
+// Use docx and FileSaver from CDN (loaded in index.html)
+// DO NOT import from npm packages - this breaks the single-file webpack build
+// Access via window.docx and window.saveAs globals
 
 /**
- * Generates Word document from form data using docx library
+ * Generates Word document from form data using docx library from CDN
  * @param {Object} formData - The form data to export
  * @param {String} filename - Optional filename for the Word document
  */
 export async function exportToWord(formData, filename = 'Leistungsbeschreibung.docx') {
+  // Check if docx library is available from CDN
+  if (!window.docx) {
+    throw new Error('docx library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
+  }
+  if (!window.saveAs) {
+    throw new Error('FileSaver library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
+  }
+
+  // Get docx classes from window.docx
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = window.docx;
+  const saveAs = window.saveAs;
+
   try {
     // Create document sections
-    const sections = generateDocumentSections(formData);
+    const sections = generateDocumentSections(formData, { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType });
     
     // Create Word document
     const doc = new Document({
@@ -43,9 +55,11 @@ export async function exportToWord(formData, filename = 'Leistungsbeschreibung.d
 /**
  * Generates document sections for Word export
  * @param {Object} formData - The form data
+ * @param {Object} docxClasses - The docx library classes
  * @returns {Array} Array of document paragraphs and tables
  */
-function generateDocumentSections(formData) {
+function generateDocumentSections(formData, docxClasses) {
+  const { Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = docxClasses;
   const sections = [];
 
   // Title
