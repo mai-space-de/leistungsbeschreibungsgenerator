@@ -62,11 +62,14 @@
         <!-- Bidder Requirements -->
         <section v-if="formData.bidderRequirements && formData.bidderRequirements.length > 0" class="section">
           <h2>4. Anforderungen an den Bieter</h2>
-          <ul class="requirements-list">
-            <li v-for="(requirement, index) in formData.bidderRequirements" :key="index">
-              {{ requirement.description }}
-            </li>
-          </ul>
+          <div v-for="(requirement, index) in formData.bidderRequirements" :key="index" class="requirement-group">
+            <h3 class="requirement-criterion">{{ requirement.criterion }}</h3>
+            <ul class="requirements-list" v-if="requirement.requirements && requirement.requirements.length > 0">
+              <li v-for="(subReq, subIndex) in requirement.requirements" :key="subIndex">
+                {{ subReq.text }}
+              </li>
+            </ul>
+          </div>
         </section>
         
         <!-- Service Requirements -->
@@ -74,7 +77,11 @@
           <h2>5. Leistungsanforderungen</h2>
           <ul class="requirements-list">
             <li v-for="(requirement, index) in formData.serviceRequirements" :key="index">
-              {{ requirement.description }}
+              <strong>{{ requirement.text }}</strong>
+              <span v-if="requirement.criteriaType" class="criteria-badge">
+                {{ requirement.criteriaType === 'A' ? 'Ausschlusskriterium' : 'Bewertungskriterium' }}
+                <span v-if="requirement.criteriaType === 'B' && requirement.weight"> ({{ requirement.weight }}%)</span>
+              </span>
             </li>
           </ul>
         </section>
@@ -403,6 +410,25 @@ export default {
   font-weight: bold;
   position: absolute;
   left: 0;
+}
+
+.requirement-group {
+  margin-bottom: 15pt;
+}
+
+.requirement-criterion {
+  font-size: 10pt;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8pt;
+}
+
+.criteria-badge {
+  display: inline-block;
+  margin-left: 8pt;
+  font-size: 8pt;
+  color: #666;
+  font-style: italic;
 }
 
 .cost-table {

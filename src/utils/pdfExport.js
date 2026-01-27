@@ -352,15 +352,24 @@ function generateDocumentContent(formData) {
     content += `
       <section class="section">
         <h2>4. Anforderungen an den Bieter</h2>
-        <ul class="requirements-list">
     `;
     
     formData.bidderRequirements.forEach(requirement => {
-      content += `<li>${requirement.description}</li>`;
+      if (requirement.criterion) {
+        content += `<h3 style="font-size: 10pt; font-weight: bold; color: #333; margin: 12pt 0 6pt 0;">${requirement.criterion}</h3>`;
+      }
+      if (requirement.requirements && requirement.requirements.length > 0) {
+        content += `<ul class="requirements-list">`;
+        requirement.requirements.forEach(subReq => {
+          if (subReq.text) {
+            content += `<li>${subReq.text}</li>`;
+          }
+        });
+        content += `</ul>`;
+      }
     });
     
     content += `
-        </ul>
       </section>
     `;
   }
@@ -374,7 +383,18 @@ function generateDocumentContent(formData) {
     `;
     
     formData.serviceRequirements.forEach(requirement => {
-      content += `<li>${requirement.description}</li>`;
+      if (requirement.text) {
+        content += `<li><strong>${requirement.text}</strong>`;
+        if (requirement.criteriaType) {
+          const criteriaText = requirement.criteriaType === 'A' ? 'Ausschlusskriterium' : 'Bewertungskriterium';
+          content += ` <span style="font-size: 8pt; color: #666; font-style: italic;">(${criteriaText}`;
+          if (requirement.criteriaType === 'B' && requirement.weight) {
+            content += `, ${requirement.weight}%`;
+          }
+          content += `)</span>`;
+        }
+        content += `</li>`;
+      }
     });
     
     content += `

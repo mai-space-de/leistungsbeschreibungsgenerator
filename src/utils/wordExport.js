@@ -360,18 +360,43 @@ function generateDocumentSections(formData, docxClasses) {
     );
 
     formData.bidderRequirements.forEach(requirement => {
-      sections.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `• ${requirement.description}`,
-              size: 20, // 10pt
-              font: 'Arial',
-            }),
-          ],
-          spacing: { after: 120 },
-        })
-      );
+      // Add criterion heading
+      if (requirement.criterion) {
+        sections.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: requirement.criterion,
+                bold: true,
+                size: 20, // 10pt
+                font: 'Arial',
+                color: '333333',
+              }),
+            ],
+            spacing: { before: 160, after: 80 },
+          })
+        );
+      }
+      
+      // Add sub-requirements
+      if (requirement.requirements && requirement.requirements.length > 0) {
+        requirement.requirements.forEach(subReq => {
+          if (subReq.text) {
+            sections.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${subReq.text}`,
+                    size: 20, // 10pt
+                    font: 'Arial',
+                  }),
+                ],
+                spacing: { after: 120 },
+              })
+            );
+          }
+        });
+      }
     });
 
     sections.push(new Paragraph({ text: '', spacing: { after: 120 } }));
@@ -396,18 +421,42 @@ function generateDocumentSections(formData, docxClasses) {
     );
 
     formData.serviceRequirements.forEach(requirement => {
-      sections.push(
-        new Paragraph({
-          children: [
+      if (requirement.text) {
+        const textRuns = [
+          new TextRun({
+            text: `• ${requirement.text}`,
+            bold: true,
+            size: 20, // 10pt
+            font: 'Arial',
+          })
+        ];
+        
+        if (requirement.criteriaType) {
+          const criteriaText = requirement.criteriaType === 'A' ? 'Ausschlusskriterium' : 'Bewertungskriterium';
+          let badgeText = ` (${criteriaText}`;
+          if (requirement.criteriaType === 'B' && requirement.weight) {
+            badgeText += `, ${requirement.weight}%`;
+          }
+          badgeText += ')';
+          
+          textRuns.push(
             new TextRun({
-              text: `• ${requirement.description}`,
-              size: 20, // 10pt
+              text: badgeText,
+              size: 16, // 8pt
               font: 'Arial',
-            }),
-          ],
-          spacing: { after: 120 },
-        })
-      );
+              color: '666666',
+              italics: true,
+            })
+          );
+        }
+        
+        sections.push(
+          new Paragraph({
+            children: textRuns,
+            spacing: { after: 120 },
+          })
+        );
+      }
     });
 
     sections.push(new Paragraph({ text: '', spacing: { after: 120 } }));
