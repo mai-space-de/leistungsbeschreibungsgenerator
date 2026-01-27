@@ -522,11 +522,11 @@ function generateDocumentSections(formData, docxClasses) {
       
       // Calculate total - extract numeric part from quantity string if needed
       let numericQuantity = 0;
-      if (typeof quantity === 'string') {
+      if (typeof quantity === 'string' && quantity) {
         const match = quantity.match(/^(\d+(?:[.,]\d+)?)/);
         numericQuantity = match ? parseFloat(match[1].replace(',', '.')) : 0;
-      } else {
-        numericQuantity = quantity || 0;
+      } else if (typeof quantity === 'number') {
+        numericQuantity = quantity;
       }
       
       const total = numericQuantity * (row.unitPrice || 0);
@@ -542,7 +542,7 @@ function generateDocumentSections(formData, docxClasses) {
               children: [new Paragraph({ children: [new TextRun({ text: description })] })],
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: quantity.toString() })], alignment: AlignmentType.RIGHT })],
+              children: [new Paragraph({ children: [new TextRun({ text: String(quantity) })], alignment: AlignmentType.RIGHT })],
             }),
             new TableCell({
               children: [new Paragraph({ children: [new TextRun({ text: formatCurrency(row.unitPrice || 0) })], alignment: AlignmentType.RIGHT })],

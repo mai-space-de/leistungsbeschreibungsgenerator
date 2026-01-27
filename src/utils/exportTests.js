@@ -20,27 +20,40 @@ export const createTestData = () => ({
   startDate: '2024-04-01',
   endDate: '2024-06-30',
   
-  // Bidder Requirements (Step 3)
+  // Bidder Requirements (Step 3) - Nested structure with criteria and sub-requirements
   bidderRequirements: [
-    { id: 1, description: 'Nachweis über Eintragung in die Handwerksrolle' },
-    { id: 2, description: 'Mindestens 5 Jahre Erfahrung in Fassadenarbeiten' },
-    { id: 3, description: 'Referenzprojekte vergleichbarer Größenordnung' }
+    { 
+      id: 1, 
+      criterion: 'Fachkunde',
+      requirements: [
+        { id: 1, text: 'Nachweis über Eintragung in die Handwerksrolle' },
+        { id: 2, text: 'Mindestens 5 Jahre Erfahrung in Fassadenarbeiten' }
+      ]
+    },
+    { 
+      id: 2, 
+      criterion: 'Referenzen',
+      requirements: [
+        { id: 1, text: 'Referenzprojekte vergleichbarer Größenordnung' },
+        { id: 2, text: 'Kontaktdaten der Referenzgeber' }
+      ]
+    }
   ],
   
-  // Service Requirements (Step 4)
+  // Service Requirements (Step 4) - Structure with text, criteriaType, and weight
   serviceRequirements: [
-    { id: 1, description: 'Verwendung umweltfreundlicher Materialien nach DIN-Norm' },
-    { id: 2, description: 'Einhaltung der Arbeitssicherheitsvorschriften' },
-    { id: 3, description: 'Wöchentliche Baustellenberichte' }
+    { id: 1, text: 'Verwendung umweltfreundlicher Materialien nach DIN-Norm', criteriaType: 'A' },
+    { id: 2, text: 'Einhaltung der Arbeitssicherheitsvorschriften', criteriaType: 'A' },
+    { id: 3, text: 'Wöchentliche Baustellenberichte', criteriaType: 'B', weight: 30 }
   ],
   
-  // Cost Structure (Step 5)
+  // Cost Structure (Step 5) - Uses service field and quantity as string with unit
   costRows: [
-    { id: 1, description: 'Gerüststellung', quantity: 500, unit: 'm²', unitPrice: 12.50 },
-    { id: 2, description: 'Fassadenreinigung', quantity: 500, unit: 'm²', unitPrice: 8.00 },
-    { id: 3, description: 'Spachtelarbeiten', quantity: 500, unit: 'm²', unitPrice: 15.00 },
-    { id: 4, description: 'Grundierung', quantity: 500, unit: 'm²', unitPrice: 6.50 },
-    { id: 5, description: 'Neuanstrich (2-fach)', quantity: 500, unit: 'm²', unitPrice: 18.00 }
+    { id: 1, service: 'Gerüststellung', quantity: '500 m²', unitPrice: 12.50 },
+    { id: 2, service: 'Fassadenreinigung', quantity: '500 m²', unitPrice: 8.00 },
+    { id: 3, service: 'Spachtelarbeiten', quantity: '500 m²', unitPrice: 15.00 },
+    { id: 4, service: 'Grundierung', quantity: '500 m²', unitPrice: 6.50 },
+    { id: 5, service: 'Neuanstrich (2-fach)', quantity: '500 m²', unitPrice: 18.00 }
   ],
   
   // Contract Details (Step 6) - Einkauf only

@@ -63,10 +63,10 @@
         <section v-if="formData.bidderRequirements && formData.bidderRequirements.length > 0" class="section">
           <h2>4. Anforderungen an den Bieter</h2>
           <div v-for="(requirement, index) in formData.bidderRequirements" :key="index" class="requirement-group">
-            <h3 class="requirement-criterion">{{ requirement.criterion }}</h3>
+            <h3 v-if="requirement.criterion" class="requirement-criterion">{{ requirement.criterion }}</h3>
             <ul class="requirements-list" v-if="requirement.requirements && requirement.requirements.length > 0">
               <li v-for="(subReq, subIndex) in requirement.requirements" :key="subIndex">
-                {{ subReq.text }}
+                {{ subReq.text || '' }}
               </li>
             </ul>
           </div>
@@ -102,7 +102,7 @@
             <tbody>
               <tr v-for="(row, index) in formData.costRows" :key="index">
                 <td class="number">{{ index + 1 }}</td>
-                <td>{{ row.service ||  row.description || '' }}</td>
+                <td>{{ row.service || row.description || '' }}</td>
                 <td class="number">{{ formatQuantity(row) }}</td>
                 <td class="number">{{ formatCurrency(row.unitPrice) }}</td>
                 <td class="number">{{ formatCurrency(calculateRowTotal(row)) }}</td>
@@ -186,7 +186,7 @@ export default {
       if (row.quantity && row.unit) {
         return `${row.quantity} ${row.unit}`;
       } else if (row.quantity) {
-        return row.quantity;
+        return String(row.quantity);
       }
       return '';
     },

@@ -429,11 +429,11 @@ function generateDocumentContent(formData) {
       
       // Calculate total - extract numeric part from quantity string if needed
       let numericQuantity = 0;
-      if (typeof quantity === 'string') {
+      if (typeof quantity === 'string' && quantity) {
         const match = quantity.match(/^(\d+(?:[.,]\d+)?)/);
         numericQuantity = match ? parseFloat(match[1].replace(',', '.')) : 0;
-      } else {
-        numericQuantity = quantity || 0;
+      } else if (typeof quantity === 'number') {
+        numericQuantity = quantity;
       }
       
       const total = numericQuantity * (row.unitPrice || 0);
@@ -443,7 +443,7 @@ function generateDocumentContent(formData) {
         <tr>
           <td class="number">${index + 1}</td>
           <td>${description}</td>
-          <td class="number">${quantity}</td>
+          <td class="number">${String(quantity)}</td>
           <td class="number">${formatCurrency(row.unitPrice || 0)}</td>
           <td class="number">${formatCurrency(total)}</td>
         </tr>
