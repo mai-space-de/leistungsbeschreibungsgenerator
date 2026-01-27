@@ -14,7 +14,7 @@
     <main class="layout" :class="{ 'with-preview': showPreview }">
       <!-- Editor Column -->
       <div class="editor-col">
-        <div id="error-box" class="alert alert-error" v-if="errorMessage">
+        <div id="message-box" :class="['alert', messageType === 'success' ? 'alert-success' : 'alert-error']" v-if="errorMessage">
           {{ errorMessage }}
         </div>
 
@@ -93,6 +93,8 @@ import ContractDetailsStep from './components/steps/ContractDetailsStep.vue'
 import AttachmentsStep from './components/steps/AttachmentsStep.vue'
 import StepNavigation from './components/StepNavigation.vue'
 import DocumentPreview from './components/DocumentPreview.vue'
+import { exportToPDF } from './utils/pdfExport.js'
+import { exportToWord } from './utils/wordExport.js'
 
 export default {
   name: 'App',
@@ -114,6 +116,7 @@ export default {
       totalSteps: 7,
       showPreview: false,
       errorMessage: '',
+      messageType: 'error', // 'error' or 'success'
       resizeObserver: null,
       headerHeight: 70,
       formData: {
@@ -287,14 +290,46 @@ export default {
       }
     },
 
-    exportPDF() {
-      // TODO: Implement PDF export
-      alert('PDF-Export wird implementiert...');
+    async exportPDF() {
+      try {
+        this.showError(''); // Clear any previous errors
+        
+        // Generate filename based on project title
+        const filename = this.generateFilename('pdf');
+        
+        // Export to PDF
+        const result = await exportToPDF(this.formData, filename);
+        
+        if (result.success) {
+          this.showSuccess('PDF erfolgreich exportiert!');
+        } else {
+          this.showError(result.message);
+        }
+      } catch (error) {
+        console.error('PDF Export Error:', error);
+        this.showError('Fehler beim PDF-Export: ' + error.message);
+      }
     },
 
-    exportWord() {
-      // TODO: Implement Word export
-      alert('Word-Export wird implementiert...');
+    async exportWord() {
+      try {
+        this.showError(''); // Clear any previous errors
+        
+        // Generate filename based on project title
+        const filename = this.generateFilename('docx');
+        
+        // Export to Word
+        const result = await exportToWord(this.formData, filename);
+        
+        if (result.success) {
+          this.showSuccess('Word-Dokument erfolgreich exportiert!');
+        } else {
+          this.showError(result.message);
+        }
+      } catch (error) {
+        console.error('Word Export Error:', error);
+        this.showError('Fehler beim Word-Export: ' + error.message);
+      }
     },
 
     generateDocument() {
@@ -303,15 +338,44 @@ export default {
       // You could add validation here
     },
 
+    generateFilename(extension) {
+      // Generate filename based on project title and vergabe number
+      let filename = 'Leistungsbeschreibung';
+      
+      if (this.formData.projectTitle) {
+        filename = this.formData.projectTitle.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '').trim();
+      }
+      
+      if (this.formData.vergabeNr) {
+        filename += `_${this.formData.vergabeNr}`;
+      }
+      
+      // Add current date
+      const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      filename += `_${date}`;
+      
+      return `${filename}.${extension}`;
+    },
+
     showError(message) {
       this.errorMessage = message;
+      this.messageType = 'error';
       setTimeout(() => {
         this.clearError();
       }, 5000);
     },
 
+    showSuccess(message) {
+      this.errorMessage = message;
+      this.messageType = 'success';
+      setTimeout(() => {
+        this.clearError();
+      }, 3000);
+    },
+
     clearError() {
       this.errorMessage = '';
+      this.messageType = 'error';
     },
 
     // Header height change handler
@@ -469,6 +533,12 @@ body {
   background: #f8d7da;
   border-color: #f5c6cb;
   color: #721c24;
+}
+
+.alert-success {
+  background: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
 }
 
 /* Responsive Design */
