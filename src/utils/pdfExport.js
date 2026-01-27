@@ -30,7 +30,7 @@ export async function exportToPDF(formData, filename = 'Leistungsbeschreibung.pd
     element.style.position = 'absolute';
     element.style.left = '-9999px';
     element.style.top = '0';
-    element.style.width = '210mm'; // A4 width
+    element.style.width = '794px'; // A4 width in pixels at 96 DPI
     document.body.appendChild(element);
 
     // Wait for any fonts or styles to load
@@ -49,37 +49,44 @@ export async function exportToPDF(formData, filename = 'Leistungsbeschreibung.pd
     });
     
     // Calculate PDF dimensions
-    const imgWidth = 210; // A4 width in mm
-    const pageHeight = 297; // A4 height in mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
-    
-    // Create PDF
     const pdf = new jsPDF({
       unit: 'mm',
       format: 'a4',
       orientation: 'portrait'
     });
     
+    const pageWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
     const margins = 25; // 25mm margins
-    const contentWidth = imgWidth - (2 * margins);
+    
+    // Calculate content area
+    const contentWidth = pageWidth - (2 * margins);
     const contentHeight = pageHeight - (2 * margins);
     
-    let position = 0;
-    
-    // Add image to PDF (with proper margins)
+    // Convert canvas to image data
     const imgData = canvas.toDataURL('image/jpeg', 0.98);
     
-    // First page
-    pdf.addImage(imgData, 'JPEG', margins, margins, contentWidth, (imgHeight * contentWidth) / imgWidth);
-    heightLeft -= contentHeight;
+    // Calculate image dimensions to fit within content area
+    const imgWidth = contentWidth;
+    const imgHeight = (canvas.height * contentWidth) / canvas.width;
     
-    // Add additional pages if content is longer than one page
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', margins, position + margins, contentWidth, (imgHeight * contentWidth) / imgWidth);
-      heightLeft -= contentHeight;
+    // Calculate how many pages we need
+    const totalPages = Math.ceil(imgHeight / contentHeight);
+    
+    // Add pages to PDF
+    for (let page = 0; page < totalPages; page++) {
+      if (page > 0) {
+        pdf.addPage();
+      }
+      
+      // Calculate the source y position in the image (in mm)
+      const sourceY = page * contentHeight;
+      
+      // Position the image so that the correct portion is visible
+      // We use negative y offset to show different parts of the image
+      const yPosition = margins - sourceY;
+      
+      pdf.addImage(imgData, 'JPEG', margins, yPosition, imgWidth, imgHeight);
     }
     
     // Save PDF
