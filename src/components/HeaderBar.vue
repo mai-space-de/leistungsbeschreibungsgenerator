@@ -11,6 +11,8 @@
       class="hamburger-btn" 
       :class="{ 'is-active': isMobileMenuOpen }"
       aria-label="Menu"
+      :aria-expanded="isMobileMenuOpen"
+      aria-controls="mobile-menu"
     >
       <span class="hamburger-line"></span>
       <span class="hamburger-line"></span>
@@ -35,7 +37,13 @@
     
     <!-- Mobile Menu Overlay -->
     <transition name="slide-fade">
-      <div v-if="isMobileMenuOpen" class="mobile-menu">
+      <div 
+        v-if="isMobileMenuOpen" 
+        id="mobile-menu"
+        class="mobile-menu"
+        role="navigation"
+        aria-label="Mobile Navigation"
+      >
         <button @click="handleMobileAction('restart')" class="btn btn-secondary btn-mobile">
           Neustarten
         </button>
@@ -73,12 +81,14 @@ export default {
     this.$nextTick(() => {
       this.emitHeight();
       this.setupResizeObserver();
+      this.setupEventListeners();
     });
   },
   beforeUnmount() {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    this.cleanupEventListeners();
   },
   methods: {
     toggleMobileMenu() {
@@ -87,6 +97,34 @@ export default {
     handleMobileAction(action) {
       this.$emit(action);
       this.isMobileMenuOpen = false;
+    },
+    handleClickOutside(event) {
+      // Close menu if click is outside the header bar
+      if (this.isMobileMenuOpen && this.$el && !this.$el.contains(event.target)) {
+        this.isMobileMenuOpen = false;
+      }
+    },
+    handleResize() {
+      // Close menu when resizing from mobile to desktop
+      if (this.isMobileMenuOpen && window.innerWidth > 768) {
+        this.isMobileMenuOpen = false;
+      }
+    },
+    handleEscapeKey(event) {
+      // Close menu when Escape key is pressed
+      if (event.key === 'Escape' && this.isMobileMenuOpen) {
+        this.isMobileMenuOpen = false;
+      }
+    },
+    setupEventListeners() {
+      document.addEventListener('click', this.handleClickOutside);
+      window.addEventListener('resize', this.handleResize);
+      document.addEventListener('keydown', this.handleEscapeKey);
+    },
+    cleanupEventListeners() {
+      document.removeEventListener('click', this.handleClickOutside);
+      window.removeEventListener('resize', this.handleResize);
+      document.removeEventListener('keydown', this.handleEscapeKey);
     },
     emitHeight() {
       if (this.$el) {
