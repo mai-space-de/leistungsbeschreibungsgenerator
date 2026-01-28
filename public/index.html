@@ -4,10 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leistungsbeschreibungsgenerator</title>
-    <!-- CDN Dependencies -->
-    <script src="https://unpkg.com/html2pdf.js@0.14.0/dist/html2pdf.bundle.min.js"></script>
-    <script src="https://unpkg.com/docx@9.5.1/dist/index.iife.js"></script>
-    <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    
+    <!-- CDN Dependencies - DO NOT REPLACE WITH NPM PACKAGES -->
+    <!-- These are required for single-file HTML build with webpack -->
+    <!-- Using SRI (Subresource Integrity) hashes for security -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" 
+            integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==" 
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/build/index.js" 
+            crossorigin="anonymous"></script>
+    <!-- Using jsPDF and html2canvas as more stable alternative to html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" 
+            integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" 
+            crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js" 
+            crossorigin="anonymous"></script>
 </head>
 <body>
     <div id="app"></div>

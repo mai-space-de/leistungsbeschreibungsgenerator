@@ -3,7 +3,7 @@
     <div class="card-header">2. Definition der Leistung</div>
     <div class="card-content">
       <!-- VOB: STLB Number -->
-      <div v-if="formData.serviceType === 'vob'" class="form-group">
+      <div v-if="formData.serviceType === 'vob'" class="form-group" :class="{ 'has-error': validationErrors.stlbNumber }">
         <label for="stlb-number">
           STLB-Nummer:
           <span class="tooltip-wrapper">
@@ -18,10 +18,11 @@
           @input="updateField('stlbNumber', $event.target.value)"
           placeholder="z.B. 663 Maler oder 682 Elektro"
         />
+        <div v-if="validationErrors.stlbNumber" class="error-message">{{ validationErrors.stlbNumber }}</div>
       </div>
 
       <!-- VOL: Service Definition -->
-      <div v-if="formData.serviceType === 'vol'" class="form-group">
+      <div v-if="formData.serviceType === 'vol'" class="form-group" :class="{ 'has-error': validationErrors.serviceDefinition }">
         <label for="service-definition">Definition der Ware oder Dienstleistung:</label>
         <textarea 
           id="service-definition" 
@@ -30,13 +31,14 @@
           placeholder="Beschreiben Sie detailliert die gewünschte Ware oder Dienstleistung..."
           rows="6"
         ></textarea>
+        <div v-if="validationErrors.serviceDefinition" class="error-message">{{ validationErrors.serviceDefinition }}</div>
       </div>
 
       <!-- Service Period -->
       <div class="form-group">
         <label for="service-period">Zeitraum für die Leistungserbringung:</label>
         <div class="date-range">
-          <div class="date-input">
+          <div class="date-input" :class="{ 'has-error': validationErrors.startDate }">
             <label for="start-date">Startdatum:</label>
             <input 
               type="date" 
@@ -44,8 +46,9 @@
               :value="formData.startDate"
               @input="updateField('startDate', $event.target.value)"
             />
+            <div v-if="validationErrors.startDate" class="error-message">{{ validationErrors.startDate }}</div>
           </div>
-          <div class="date-input">
+          <div class="date-input" :class="{ 'has-error': validationErrors.endDate }">
             <label for="end-date">Enddatum:</label>
             <input 
               type="date" 
@@ -53,6 +56,7 @@
               :value="formData.endDate"
               @input="updateField('endDate', $event.target.value)"
             />
+            <div v-if="validationErrors.endDate" class="error-message">{{ validationErrors.endDate }}</div>
           </div>
         </div>
       </div>
@@ -84,6 +88,32 @@ export default {
     }
   },
   emits: ['update-field'],
+  computed: {
+    validationErrors() {
+      const errors = {};
+      if (this.formData.serviceType === 'vob' && !this.formData.stlbNumber) {
+        errors.stlbNumber = 'STLB-Nummer ist für VOB-Leistungen erforderlich';
+      }
+      if (this.formData.serviceType === 'vol' && !this.formData.serviceDefinition) {
+        errors.serviceDefinition = 'Leistungsdefinition ist für VOL-Leistungen erforderlich';
+      }
+      if (!this.formData.startDate) {
+        errors.startDate = 'Startdatum ist erforderlich';
+      }
+      if (!this.formData.endDate) {
+        errors.endDate = 'Enddatum ist erforderlich';
+      }
+      // Check if end date is after start date
+      if (this.formData.startDate && this.formData.endDate) {
+        const startDate = new Date(this.formData.startDate);
+        const endDate = new Date(this.formData.endDate);
+        if (endDate < startDate) {
+          errors.endDate = 'Enddatum muss nach dem Startdatum liegen';
+        }
+      }
+      return errors;
+    }
+  },
   methods: {
     updateField(field, value) {
       this.$emit('update-field', { field, value });
@@ -117,6 +147,41 @@ export default {
 
 .form-group {
   margin-bottom: 20px;
+}
+
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea {
+  border-color: var(--error-color);
+}
+
+.form-group.has-error input:focus,
+.form-group.has-error select:focus,
+.form-group.has-error textarea:focus {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.date-input.has-error input {
+  border-color: var(--error-color);
+}
+
+.date-input.has-error input:focus {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.error-message {
+  color: var(--error-color);
+  font-size: 12px;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.error-message::before {
+  content: "⚠ ";
+  margin-right: 4px;
 }
 
 .form-group label {

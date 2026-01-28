@@ -1,56 +1,108 @@
-// html2pdf is loaded globally from CDN
-const html2pdf = window.html2pdf;
+// Use jsPDF and html2canvas from CDN (loaded in index.html)
+// DO NOT import from npm packages - this breaks the single-file webpack build
+// Access via window.jspdf and window.html2canvas globals
 
 /**
- * Generates PDF from form data using html2pdf.js
+ * Generates PDF from form data using jsPDF and html2canvas from CDN
  * @param {Object} formData - The form data to export
  * @param {String} filename - Optional filename for the PDF
  */
 export async function exportToPDF(formData, filename = 'Leistungsbeschreibung.pdf') {
-  // Check if html2pdf is available
-  if (!html2pdf) {
-    throw new Error('html2pdf library not loaded. Please check your internet connection.');
+  // Check if jsPDF and html2canvas are available from CDN
+  if (!window.jspdf) {
+    throw new Error('jsPDF library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
+  }
+  if (!window.html2canvas) {
+    throw new Error('html2canvas library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
   }
 
+  const { jsPDF } = window.jspdf;
+  const html2canvas = window.html2canvas;
+
+  let element = null;
+  
   try {
     // Create HTML content for PDF
     const htmlContent = generateHTMLContent(formData);
     
-    // PDF options
-    const options = {
-      margin: [25, 25, 25, 25], // Top, right, bottom, left margins in mm
-      filename: filename,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
-        scale: 2,
-        useCORS: true,
-        letterRendering: true,
-        allowTaint: true
-      },
-      jsPDF: { 
-        unit: 'mm', 
-        format: 'a4', 
-        orientation: 'portrait',
-        putTotalPages: true
-      },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
     // Generate and download PDF
-    const element = document.createElement('div');
+    element = document.createElement('div');
     element.innerHTML = htmlContent;
-    element.style.display = 'none';
+    element.style.display = 'block';
+    element.style.position = 'absolute';
+    element.style.left = '-9999px';
+    element.style.top = '0';
+    element.style.width = '794px'; // A4 width in pixels at 96 DPI
     document.body.appendChild(element);
 
-    await html2pdf().set(options).from(element).save();
+    // Wait for fonts and styles to load - increased timeout for reliability
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Convert HTML to canvas
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      letterRendering: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      logging: false,
+      windowWidth: 794, // A4 width in pixels at 96 DPI (210mm)
+      windowHeight: element.scrollHeight
+    });
     
-    // Clean up
-    document.body.removeChild(element);
+    // Calculate PDF dimensions
+    const pdf = new jsPDF({
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait'
+    });
+    
+    const pageWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
+    const margins = 25; // 25mm margins
+    
+    // Calculate content area
+    const contentWidth = pageWidth - (2 * margins);
+    const contentHeight = pageHeight - (2 * margins);
+    
+    // Convert canvas to image data
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+    
+    // Calculate image dimensions to fit within content area
+    const imgWidth = contentWidth;
+    const imgHeight = (canvas.height * contentWidth) / canvas.width;
+    
+    // Calculate how many pages we need
+    const totalPages = Math.ceil(imgHeight / contentHeight);
+    
+    // Add pages to PDF
+    for (let page = 0; page < totalPages; page++) {
+      if (page > 0) {
+        pdf.addPage();
+      }
+      
+      // Calculate the source y position in the image (in mm)
+      const sourceY = page * contentHeight;
+      
+      // Position the image so that the correct portion is visible
+      // We use negative y offset to show different parts of the image
+      const yPosition = margins - sourceY;
+      
+      pdf.addImage(imgData, 'JPEG', margins, yPosition, imgWidth, imgHeight);
+    }
+    
+    // Save PDF
+    pdf.save(filename);
     
     return { success: true, message: 'PDF erfolgreich exportiert!' };
   } catch (error) {
     console.error('PDF Export Error:', error);
     return { success: false, message: 'Fehler beim PDF-Export: ' + error.message };
+  } finally {
+    // Clean up - ensure element is always removed
+    if (element && element.parentNode) {
+      document.body.removeChild(element);
+    }
   }
 }
 
@@ -352,15 +404,24 @@ function generateDocumentContent(formData) {
     content += `
       <section class="section">
         <h2>4. Anforderungen an den Bieter</h2>
-        <ul class="requirements-list">
     `;
     
     formData.bidderRequirements.forEach(requirement => {
-      content += `<li>${requirement.description}</li>`;
+      if (requirement.criterion) {
+        content += `<h3 style="font-size: 10pt; font-weight: bold; color: #333; margin: 12pt 0 6pt 0;">${requirement.criterion}</h3>`;
+      }
+      if (requirement.requirements && requirement.requirements.length > 0) {
+        content += `<ul class="requirements-list">`;
+        requirement.requirements.forEach(subReq => {
+          if (subReq.text) {
+            content += `<li>${subReq.text}</li>`;
+          }
+        });
+        content += `</ul>`;
+      }
     });
     
     content += `
-        </ul>
       </section>
     `;
   }
@@ -374,7 +435,18 @@ function generateDocumentContent(formData) {
     `;
     
     formData.serviceRequirements.forEach(requirement => {
-      content += `<li>${requirement.description}</li>`;
+      if (requirement.text) {
+        content += `<li><strong>${requirement.text}</strong>`;
+        if (requirement.criteriaType) {
+          const criteriaText = requirement.criteriaType === 'A' ? 'Ausschlusskriterium' : 'Bewertungskriterium';
+          content += ` <span style="font-size: 8pt; color: #666; font-style: italic;">(${criteriaText}`;
+          if (requirement.criteriaType === 'B' && requirement.weight) {
+            content += `, ${requirement.weight}%`;
+          }
+          content += `)</span>`;
+        }
+        content += `</li>`;
+      }
     });
     
     content += `
@@ -393,8 +465,7 @@ function generateDocumentContent(formData) {
             <tr>
               <th>Position</th>
               <th>Beschreibung</th>
-              <th>Menge</th>
-              <th>Einheit</th>
+              <th>Menge/Einheit</th>
               <th>Einzelpreis (€)</th>
               <th>Gesamtpreis (€)</th>
             </tr>
@@ -404,16 +475,28 @@ function generateDocumentContent(formData) {
     
     let totalCost = 0;
     formData.costRows.forEach((row, index) => {
-      const total = row.quantity * row.unitPrice;
+      // Handle both old format and new format
+      const description = row.service || row.description || '';
+      const quantity = row.quantity || '';
+      
+      // Calculate total - extract numeric part from quantity string if needed
+      let numericQuantity = 0;
+      if (typeof quantity === 'string' && quantity) {
+        const match = quantity.match(/^(\d+(?:[.,]\d+)?)/);
+        numericQuantity = match ? parseFloat(match[1].replace(',', '.')) : 0;
+      } else if (typeof quantity === 'number') {
+        numericQuantity = quantity;
+      }
+      
+      const total = numericQuantity * (row.unitPrice || 0);
       totalCost += total;
       
       content += `
         <tr>
           <td class="number">${index + 1}</td>
-          <td>${row.description}</td>
-          <td class="number">${row.quantity}</td>
-          <td>${row.unit}</td>
-          <td class="number">${formatCurrency(row.unitPrice)}</td>
+          <td>${description}</td>
+          <td class="number">${String(quantity)}</td>
+          <td class="number">${formatCurrency(row.unitPrice || 0)}</td>
           <td class="number">${formatCurrency(total)}</td>
         </tr>
       `;
@@ -421,7 +504,7 @@ function generateDocumentContent(formData) {
     
     content += `
             <tr>
-              <th colspan="5">Gesamtsumme</th>
+              <th colspan="4">Gesamtsumme</th>
               <th class="number">${formatCurrency(totalCost)}</th>
             </tr>
           </tbody>

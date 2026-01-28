@@ -1,68 +1,26 @@
-// docx and saveAs are loaded globally from CDN
+// Use docx and FileSaver from CDN (loaded in index.html)
+// DO NOT import from npm packages - this breaks the single-file webpack build
+// Access via window.docx and window.saveAs globals
 
 /**
- * Wait for CDN libraries to load with retry mechanism
- * @param {number} maxRetries - Maximum number of retry attempts
- * @param {number} delay - Delay between retries in ms
- */
-async function waitForLibraries(maxRetries = 10, delay = 100) {
-  for (let i = 0; i < maxRetries; i++) {
-    if (window.docx && window.saveAs) {
-      console.log('Libraries loaded successfully');
-      console.log('docx structure:', Object.keys(window.docx));
-      return { docx: window.docx, saveAs: window.saveAs };
-    }
-    await new Promise(resolve => setTimeout(resolve, delay));
-  }
-  throw new Error('docx library not loaded. Please check your internet connection.');
-}
-
-/**
- * Generates Word document from form data using docx library
+ * Generates Word document from form data using docx library from CDN
  * @param {Object} formData - The form data to export
  * @param {String} filename - Optional filename for the Word document
  */
 export async function exportToWord(formData, filename = 'Leistungsbeschreibung.docx') {
+  // Check if docx library is available from CDN
+  if (!window.docx) {
+    throw new Error('docx library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
+  }
+  if (!window.saveAs) {
+    throw new Error('FileSaver library not loaded from CDN. The library may have failed to load. Please check your internet connection or try again later.');
+  }
+
+  // Get docx classes from window.docx
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = window.docx;
+  const saveAs = window.saveAs;
+
   try {
-    // Wait for libraries to be available
-    const { docx, saveAs } = await waitForLibraries();
-
-    // Check the structure of the docx object and extract classes
-    let Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType;
-    
-    // Different ways the IIFE build might expose classes
-    if (docx.Document) {
-      // Direct access (newer versions)
-      ({ Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = docx);
-    } else if (docx.default && docx.default.Document) {
-      // Through default export
-      ({ Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = docx.default);
-    } else {
-      // Manual assignment for older IIFE builds
-      Document = docx.Document || window.docx?.Document;
-      Packer = docx.Packer || window.docx?.Packer;
-      Paragraph = docx.Paragraph || window.docx?.Paragraph;
-      TextRun = docx.TextRun || window.docx?.TextRun;
-      HeadingLevel = docx.HeadingLevel || window.docx?.HeadingLevel;
-      Table = docx.Table || window.docx?.Table;
-      TableRow = docx.TableRow || window.docx?.TableRow;
-      TableCell = docx.TableCell || window.docx?.TableCell;
-      WidthType = docx.WidthType || window.docx?.WidthType;
-      BorderStyle = docx.BorderStyle || window.docx?.BorderStyle;
-      AlignmentType = docx.AlignmentType || window.docx?.AlignmentType;
-      UnderlineType = docx.UnderlineType || window.docx?.UnderlineType;
-    }
-    
-    // Verify that we have the required classes
-    if (!Document || !Paragraph || !TextRun) {
-      console.error('Missing required docx classes:', { Document, Paragraph, TextRun });
-      console.error('Available docx properties:', Object.keys(docx));
-      console.error('window.docx properties:', window.docx ? Object.keys(window.docx) : 'window.docx not found');
-      throw new Error('Required docx classes not found. Please check the docx library loading.');
-    }
-    
-    console.log('Successfully loaded docx classes');
-
     // Create document sections
     const sections = generateDocumentSections(formData, { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType });
     
@@ -72,10 +30,10 @@ export async function exportToWord(formData, filename = 'Leistungsbeschreibung.d
         properties: {
           page: {
             margin: {
-              top: 1134,    // 2cm in twips (1 inch = 1440 twips, 2cm ≈ 1134 twips)
-              right: 1134,
-              bottom: 1134,
-              left: 1134,
+              top: 1417,    // 25mm in twips (25mm / 25.4mm per inch * 1440 twips per inch ≈ 1417 twips)
+              right: 1417,
+              bottom: 1417,
+              left: 1417,
             },
           },
         },
@@ -97,11 +55,11 @@ export async function exportToWord(formData, filename = 'Leistungsbeschreibung.d
 /**
  * Generates document sections for Word export
  * @param {Object} formData - The form data
- * @param {Object} docxClasses - The docx classes
+ * @param {Object} docxClasses - The docx library classes
  * @returns {Array} Array of document paragraphs and tables
  */
 function generateDocumentSections(formData, docxClasses) {
-  const { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = docxClasses;
+  const { Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = docxClasses;
   const sections = [];
 
   // Title
@@ -360,18 +318,43 @@ function generateDocumentSections(formData, docxClasses) {
     );
 
     formData.bidderRequirements.forEach(requirement => {
-      sections.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `• ${requirement.description}`,
-              size: 20, // 10pt
-              font: 'Arial',
-            }),
-          ],
-          spacing: { after: 120 },
-        })
-      );
+      // Add criterion heading
+      if (requirement.criterion) {
+        sections.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: requirement.criterion,
+                bold: true,
+                size: 20, // 10pt
+                font: 'Arial',
+                color: '333333',
+              }),
+            ],
+            spacing: { before: 160, after: 80 },
+          })
+        );
+      }
+      
+      // Add sub-requirements
+      if (requirement.requirements && requirement.requirements.length > 0) {
+        requirement.requirements.forEach(subReq => {
+          if (subReq.text) {
+            sections.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${subReq.text}`,
+                    size: 20, // 10pt
+                    font: 'Arial',
+                  }),
+                ],
+                spacing: { after: 120 },
+              })
+            );
+          }
+        });
+      }
     });
 
     sections.push(new Paragraph({ text: '', spacing: { after: 120 } }));
@@ -396,18 +379,42 @@ function generateDocumentSections(formData, docxClasses) {
     );
 
     formData.serviceRequirements.forEach(requirement => {
-      sections.push(
-        new Paragraph({
-          children: [
+      if (requirement.text) {
+        const textRuns = [
+          new TextRun({
+            text: `• ${requirement.text}`,
+            bold: true,
+            size: 20, // 10pt
+            font: 'Arial',
+          })
+        ];
+        
+        if (requirement.criteriaType) {
+          const criteriaText = requirement.criteriaType === 'A' ? 'Ausschlusskriterium' : 'Bewertungskriterium';
+          let badgeText = ` (${criteriaText}`;
+          if (requirement.criteriaType === 'B' && requirement.weight) {
+            badgeText += `, ${requirement.weight}%`;
+          }
+          badgeText += ')';
+          
+          textRuns.push(
             new TextRun({
-              text: `• ${requirement.description}`,
-              size: 20, // 10pt
+              text: badgeText,
+              size: 16, // 8pt
               font: 'Arial',
-            }),
-          ],
-          spacing: { after: 120 },
-        })
-      );
+              color: '666666',
+              italics: true,
+            })
+          );
+        }
+        
+        sections.push(
+          new Paragraph({
+            children: textRuns,
+            spacing: { after: 120 },
+          })
+        );
+      }
     });
 
     sections.push(new Paragraph({ text: '', spacing: { after: 120 } }));
@@ -447,23 +454,18 @@ function generateDocumentSections(formData, docxClasses) {
             shading: { fill: '0066CC' },
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: 'Menge', bold: true, color: 'FFFFFF' })] })],
-            width: { size: 12, type: WidthType.PERCENTAGE },
-            shading: { fill: '0066CC' },
-          }),
-          new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: 'Einheit', bold: true, color: 'FFFFFF' })] })],
-            width: { size: 13, type: WidthType.PERCENTAGE },
+            children: [new Paragraph({ children: [new TextRun({ text: 'Menge/Einheit', bold: true, color: 'FFFFFF' })] })],
+            width: { size: 20, type: WidthType.PERCENTAGE },
             shading: { fill: '0066CC' },
           }),
           new TableCell({
             children: [new Paragraph({ children: [new TextRun({ text: 'Einzelpreis (€)', bold: true, color: 'FFFFFF' })] })],
-            width: { size: 12, type: WidthType.PERCENTAGE },
+            width: { size: 15, type: WidthType.PERCENTAGE },
             shading: { fill: '0066CC' },
           }),
           new TableCell({
             children: [new Paragraph({ children: [new TextRun({ text: 'Gesamtpreis (€)', bold: true, color: 'FFFFFF' })] })],
-            width: { size: 13, type: WidthType.PERCENTAGE },
+            width: { size: 15, type: WidthType.PERCENTAGE },
             shading: { fill: '0066CC' },
           }),
         ],
@@ -472,7 +474,20 @@ function generateDocumentSections(formData, docxClasses) {
 
     let totalCost = 0;
     formData.costRows.forEach((row, index) => {
-      const total = row.quantity * row.unitPrice;
+      // Handle both old format and new format
+      const description = row.service || row.description || '';
+      const quantity = row.quantity || '';
+      
+      // Calculate total - extract numeric part from quantity string if needed
+      let numericQuantity = 0;
+      if (typeof quantity === 'string' && quantity) {
+        const match = quantity.match(/^(\d+(?:[.,]\d+)?)/);
+        numericQuantity = match ? parseFloat(match[1].replace(',', '.')) : 0;
+      } else if (typeof quantity === 'number') {
+        numericQuantity = quantity;
+      }
+      
+      const total = numericQuantity * (row.unitPrice || 0);
       totalCost += total;
 
       costRows.push(
@@ -482,16 +497,13 @@ function generateDocumentSections(formData, docxClasses) {
               children: [new Paragraph({ children: [new TextRun({ text: (index + 1).toString() })], alignment: AlignmentType.RIGHT })],
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: row.description })] })],
+              children: [new Paragraph({ children: [new TextRun({ text: description })] })],
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: row.quantity.toString() })], alignment: AlignmentType.RIGHT })],
+              children: [new Paragraph({ children: [new TextRun({ text: String(quantity) })], alignment: AlignmentType.RIGHT })],
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: row.unit })] })],
-            }),
-            new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: formatCurrency(row.unitPrice) })], alignment: AlignmentType.RIGHT })],
+              children: [new Paragraph({ children: [new TextRun({ text: formatCurrency(row.unitPrice || 0) })], alignment: AlignmentType.RIGHT })],
             }),
             new TableCell({
               children: [new Paragraph({ children: [new TextRun({ text: formatCurrency(total) })], alignment: AlignmentType.RIGHT })],
@@ -507,7 +519,7 @@ function generateDocumentSections(formData, docxClasses) {
         children: [
           new TableCell({
             children: [new Paragraph({ children: [new TextRun({ text: '', bold: true })] })],
-            columnSpan: 5,
+            columnSpan: 4,
             shading: { fill: 'F8F9FA' },
           }),
           new TableCell({

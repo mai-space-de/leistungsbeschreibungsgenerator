@@ -458,6 +458,7 @@ export default {
   --secondary: #f8f9fa;
   --border: #ddd;
   --header-grey: #f2f2f2;
+  --error-color: #dc3545;
 
   /* Height calculations - will be updated by JavaScript */
   --header-height: 70px; /* Conservative default, updated dynamically */
