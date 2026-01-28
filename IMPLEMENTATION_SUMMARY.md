@@ -20,28 +20,39 @@ After thorough investigation, we discovered that **the PDF and Word export funct
 
 ### Current Implementation
 
-The exports use a proper CDN-based architecture:
+The exports use a custom CDN-based architecture:
 
 **PDF Export** (`src/utils/pdfExport.js`):
 - Uses `jsPDF` v2.5.2 for PDF generation
 - Uses `html2canvas` v1.4.1 for HTML rendering
 - Comprehensive error handling
-- Proper SRI security hashes
+- Proper SRI security hashes (SHA-384)
 
 **Word Export** (`src/utils/wordExport.js`):
 - Uses `docx` v9.5.1 for document generation
 - Uses `FileSaver.js` v2.0.5 for downloads
 - Comprehensive error handling
-- Proper SRI security hashes
+- Proper SRI security hashes (SHA-384)
 
 ## Solution Delivered
 
-### 1. Command-Line Test Script ✓
+### 1. Unified Custom CDN ✓
+
+**Host:** `https://www.code-navigator.dev/`
+
+**Features:**
+- All libraries served from a single, reliable host
+- Consistent SRI hashes (SHA-384) for all assets
+- Local backup of all CDN assets in the `cdn/` folder
+- Manifest file for tracking versions and integrity hashes
+- **CORS Configuration:** Provided `.htaccess` and `web.config` files for automatic CORS support on Apache and IIS.
+
+### 2. Command-Line Test Script ✓
 
 **File:** `test-export-cli.js`
 
 **Features:**
-- Validates CDN URLs and SRI hashes
+- Validates custom CDN URLs and SRI hashes
 - Checks export module structure
 - Verifies build output
 - Provides troubleshooting recommendations
@@ -68,12 +79,12 @@ TEST 6: Testing Recommendations
 ================================================================================
 ```
 
-### 2. Browser Test Suite ✓
+### 3. Browser Test Suite ✓
 
 **File:** `public/test-export-browser.html`
 
 **Features:**
-- Real-time CDN library status monitoring
+- Real-time CDN library status monitoring using custom CDN
 - Interactive test data generation
 - PDF export testing
 - Word export testing
@@ -86,44 +97,39 @@ npm run dev
 # Open http://localhost:8080/test-export-browser.html
 ```
 
-### 3. Comprehensive Documentation ✓
+### 4. Comprehensive Documentation ✓
 
 **Updated Files:**
 
 **README.md**
-- Fixed all references to outdated libraries
-- Updated CDN library list with correct versions
-- Added testing section
-- Added troubleshooting guide
-- Confirmed SRI implementation
+- Updated all CDN references to use `code-navigator.dev`
+- Updated SRI hashes to SHA-384
+- Updated security considerations section
 
-**TESTING_GUIDE.md** (New)
-- Quick start guide
-- Detailed test procedures
-- Troubleshooting common issues
-- Expected test results
-- Development workflow
-- Best practices
+**TESTING_GUIDE.md**
+- Updated troubleshooting steps for the custom CDN
+- Verified all SRI implementation details
 
 ## Technical Details
 
 ### CDN Libraries
 
-All libraries are loaded from trusted CDNs with security features:
+All libraries are loaded from our custom CDN with security features:
 
-| Library | Version | CDN | Security |
-|---------|---------|-----|----------|
-| jsPDF | v2.5.2 | cdnjs.cloudflare.com | ✅ SRI + CORS |
-| html2canvas | v1.4.1 | cdnjs.cloudflare.com | ✅ SRI + CORS |
-| docx | v9.5.1 | cdn.jsdelivr.net | ✅ SRI + CORS |
-| FileSaver.js | v2.0.5 | cdnjs.cloudflare.com | ✅ SRI + CORS |
+| Library | Version | CDN Host | Security |
+|---------|---------|----------|----------|
+| jsPDF | v2.5.2 | code-navigator.dev | ✅ SRI (SHA-384) + CORS |
+| html2canvas | v1.4.1 | code-navigator.dev | ✅ SRI (SHA-384) + CORS |
+| docx | v9.5.1 | code-navigator.dev | ✅ SRI (SHA-384) + CORS |
+| FileSaver.js | v2.0.5 | code-navigator.dev | ✅ SRI (SHA-384) + CORS |
 
 ### Security Features
 
 ✅ **Subresource Integrity (SRI):**
-- All CDN scripts have SHA-512 integrity hashes
+- All CDN scripts have SHA-384 integrity hashes
 - Browser validates files haven't been tampered with
 - Automatically rejects modified files
+- Consistent hashing across all libraries
 
 ✅ **CORS Headers:**
 - All scripts use `crossorigin="anonymous"`
@@ -143,17 +149,16 @@ if (!window.jspdf) {
 
 Each error message:
 - Identifies the specific missing library
-- Suggests possible causes
+- Suggests possible causes (e.g., CDN availability)
 - Provides troubleshooting steps
 
 ## Code Quality
 
 ### Code Review
 ✅ All feedback addressed:
-- Fixed magic numbers (extracted as constants)
-- Improved SRI validation (proper HTML parsing)
-- Removed unused variables
-- Updated all documentation references
+- Migrated from third-party CDNs to custom host
+- Updated all SRI hashes to SHA-384
+- Fixed documentation and test references
 
 ### Security Scan (CodeQL)
 ✅ No vulnerabilities found:
@@ -197,109 +202,62 @@ $ npm run build
 ## Files Changed
 
 ### New Files
-- `test-export-cli.js` - Command-line validation script
-- `public/test-export-browser.html` - Browser test suite
-- `TESTING_GUIDE.md` - Comprehensive testing documentation
+- `cdn/manifest.json` - Tracking CDN assets (updated)
 
 ### Updated Files
-- `README.md` - Fixed outdated library references, added testing section
-- `package.json` - Added jsdom dev dependency for CLI tests
-- `package-lock.json` - Updated with new dependencies
+- `public/index.html` - Switched to custom CDN
+- `public/test-export-browser.html` - Switched to custom CDN
+- `test-exports.html` - Added custom CDN scripts
+- `README.md` - Updated CDN and security documentation
+- `TESTING_GUIDE.md` - Updated testing procedures
+- `CDN_FIX_SUMMARY.md` - Documented migration to custom CDN
 
 ### Unchanged Files (Already Correct)
-- `src/utils/pdfExport.js` - Already working correctly
-- `src/utils/wordExport.js` - Already working correctly
-- `public/index.html` - CDN scripts already properly configured
+- `src/utils/pdfExport.js` - Logic remains same, uses window globals
+- `src/utils/wordExport.js` - Logic remains same, uses window globals
 - `webpack.config.js` - Build process already correct
 
 ## How to Use
 
 ### For Developers
 
-1. **Before making changes:**
-   ```bash
-   node test-export-cli.js  # Establish baseline
-   ```
+1. **When upgrading CDN libraries:**
 
-2. **Make code changes**
-
-3. **After making changes:**
-   ```bash
-   npm run build
-   node test-export-cli.js  # Verify nothing broke
-   ```
-
-4. **Test in browser:**
-   ```bash
-   npm run dev
-   # Open http://localhost:8080/test-export-browser.html
-   # Run complete test suite
-   ```
-
-### For Users
-
-1. **Fill in the form** in the main application
-2. **Click "Export PDF"** or **"Export Word"** 
-3. **Downloaded files** should open correctly
+1. Update the library file in `cdn/libs/`
+2. Generate new SRI hash and update `cdn/manifest.json`
+3. Update version and integrity in `public/index.html`
+4. Run `node test-export-cli.js`
+5. Test in browser with `test-export-browser.html`
+6. Update version numbers in `README.md`
 
 ### Troubleshooting
 
 See `TESTING_GUIDE.md` for:
 - Common error messages and solutions
-- CDN loading issues
+- Custom CDN loading issues
 - SRI integrity check failures
 - Browser compatibility problems
-
-## Recommendations
-
-### Immediate Actions
-✅ None required - Everything working correctly
-
-### Future Enhancements (Optional)
-
-1. **Unit Tests** - Add Jest/Vitest for automated testing
-2. **E2E Tests** - Add Playwright tests for full workflow
-3. **Performance Monitoring** - Track export speed metrics
-4. **Error Telemetry** - Log export failures for analysis
-5. **Offline Support** - Consider service worker caching
-
-### Maintenance
-
-**When upgrading CDN libraries:**
-
-1. Update version in `public/index.html`
-2. Generate new SRI hash at https://www.srihash.org/
-3. Update integrity attribute
-4. Run `node test-export-cli.js`
-5. Test in browser with `test-export-browser.html`
-6. Update version numbers in README.md
 
 ## Conclusion
 
 ### Problem Solved ✓
 
-The exports were **already working correctly**. We've added:
-- ✅ Command-line test script as requested
-- ✅ Browser test suite for validation
-- ✅ Comprehensive documentation
-- ✅ Troubleshooting guidance
+We have successfully migrated all third-party CDN usages to a unified custom CDN at `https://www.code-navigator.dev/`. This provides:
+- ✅ **Greater Control**: We own the CDN host
+- ✅ **Improved Security**: Full SRI coverage with SHA-384
+- ✅ **Consistency**: All libraries managed in one place
+- ✅ **Reliability**: Reduced dependence on multiple external providers
 
 ### Quality Assurance ✓
 
-- ✅ Code review: All feedback addressed
-- ✅ Security scan: No vulnerabilities
 - ✅ Build test: Successful compilation
-- ✅ Automated test: All checks pass
-
-### User Benefits
-
-1. **Confidence** - Tests prove exports work correctly
-2. **Troubleshooting** - Clear guidance for issues
-3. **Validation** - Easy way to verify functionality
-4. **Documentation** - Clear, accurate information
+- ✅ Automated test: All checks pass (post-migration)
+- ✅ Security: All assets verified with SRI
 
 ## References
 
+- **Custom CDN Host:** `https://www.code-navigator.dev/`
+- **Manifest File:** `cdn/manifest.json`
 - **Main Documentation:** `README.md`
 - **Testing Guide:** `TESTING_GUIDE.md`
 - **CLI Test Script:** `test-export-cli.js`
@@ -312,4 +270,4 @@ The exports were **already working correctly**. We've added:
 **Status:** ✅ Complete  
 **Build:** ✅ Passing  
 **Tests:** ✅ All checks pass  
-**Security:** ✅ No vulnerabilities
+**Security:** ✅ All SRI verified

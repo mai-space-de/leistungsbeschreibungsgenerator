@@ -21,38 +21,41 @@ The project uses webpack to create a single, self-contained HTML file with all J
 
 ### CDN Libraries Used
 
-The following libraries are loaded via CDN in `public/index.html`:
+The following libraries are loaded via a custom CDN in `public/index.html`:
 
 1. **FileSaver.js** (v2.0.5) - For saving Word documents
-   - CDN: `https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js`
+   - CDN: `https://www.code-navigator.dev/libs/filesaver.js/2.0.5/FileSaver.min.js`
    - Global: `window.saveAs`
-   - SRI Hash: `sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==`
+   - SRI Hash: `sha384-PlRSzpewlarQuj5alIadXwjNUX+2eNMKwr0f07ShWYLy8B6TjEbm7ZlcN/ScSbwy`
 
 2. **docx** (v9.5.1) - For generating Word documents
-   - CDN: `https://cdn.jsdelivr.net/npm/docx@9.5.1/build/index.js` (Note: use `index.js`, not `index.min.js`)
+   - CDN: `https://www.code-navigator.dev/libs/docx/9.5.1/docx.min.js`
    - Global: `window.docx`
+   - SRI Hash: `sha384-HWC8sFPgg/WYrr43jIR6e0YIKgPkS3VLdteGgh9MFlUet3xdAVEM8YS69xP4Puse`
 
 3. **jsPDF** (v2.5.2) - For PDF generation
-   - CDN: `https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js`
+   - CDN: `https://www.code-navigator.dev/libs/jspdf/2.5.2/jspdf.min.js`
    - Global: `window.jspdf`
+   - SRI Hash: `sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/`
 
 4. **html2canvas** (v1.4.1) - For rendering HTML to canvas for PDF generation
-   - CDN: `https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js`
+   - CDN: `https://www.code-navigator.dev/libs/html2canvas/1.4.1/html2canvas.min.js`
    - Global: `window.html2canvas`
-   - SRI Hash: `sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==`
+   - SRI Hash: `sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H`
 
 #### Security Considerations
 
-✅ **Security Implemented:** CDN script tags include Subresource Integrity (SRI) hashes where available and CORS attributes for enhanced security:
+✅ **Security Implemented:** All CDN script tags include Subresource Integrity (SRI) hashes and CORS attributes for enhanced security:
 
-- FileSaver.js and html2canvas include `integrity` attribute with SHA-512 hash
+- All libraries include `integrity` attribute with SHA-384 hash
 - All scripts include `crossorigin="anonymous"` attribute
 - SRI hashes ensure that scripts cannot be tampered with during transit
 - If CDN files with SRI hashes are modified, the browser will refuse to execute them
-- Note: docx and jsPDF currently load without SRI hashes due to CDN availability constraints
+- Our custom CDN provides consistent SRI hashes for all dependencies
+- **CORS Support:** The CDN server MUST allow CORS for the SRI check to work. See `cdn/README.md` for server configuration instructions.
 
 To update SRI hashes when upgrading library versions:
-1. Generate new SRI hashes using https://www.srihash.org/
+1. Generate new SRI hashes (found in `cdn/manifest.json` after generating the CDN folder)
 2. Update the `integrity` attribute in `public/index.html`
 3. Rebuild with `npm run build`
 

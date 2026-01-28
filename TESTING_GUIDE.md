@@ -79,18 +79,18 @@ All must show ✅ for exports to work.
 **Solutions:**
 1. Check internet connection
 2. Verify CDN is not blocked by firewall/proxy
-3. Check browser console for specific errors
-4. Try different browser or network
+3. **CORS Error:** Check browser console for CORS policy errors. If you see "No 'Access-Control-Allow-Origin' header is present", the CDN server needs to be configured to allow CORS. See `cdn/README.md` for configuration files and instructions.
+4. **Local Testing:** If opening `index.html` from the file system (`file://`), browsers may block cross-origin requests. Use a local web server (e.g., `npm run dev`) for testing.
+5. Try different browser or network
 
 ### Issue: "SRI integrity check failed"
 
 **Cause:** CDN file has been modified/updated
 
 **Solution:**
-1. Visit https://www.srihash.org/
-2. Enter the CDN URL from the error
-3. Generate new SRI hash
-4. Update `integrity` attribute in `public/index.html`
+1. Check `cdn/manifest.json` for the current SHA-384 integrity hashes
+2. Update the `integrity` attribute in `public/index.html` with the value from the manifest
+3. Note: Our custom CDN at `code-navigator.dev` provides stable hashes (SHA-384) for all libraries
 
 ### Issue: Export downloads but file is corrupted
 
