@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export Functionality Test - Leistungsbeschreibung Generator</title>
+  
+  <!-- CDN Dependencies - Same as in the main application -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" 
+          integrity="sha512-P9b8TJt7flJ/D5y8oq6M6yMvBPvhNVLdTRz1F6aSPEMlJ1Nk2tV9eSmW8dqmJBR11DL5wLLnRYqZ8rQWzVXMPg==" 
+          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/build/index.min.js" 
+          integrity="sha512-9dVEKiK5FvL1TvKqZrZqH8xZqCqLxAhLFCqfgqZhPqKKaUvHYrPqGkGmWgCNfYVT3sTf7iOCqD0YQXbEOOPqVw==" 
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" 
+          integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" 
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" 
+          integrity="sha512-Bw9Zj8x4giJb3OmlMiMaGbNrFr0ERD2f9jL3en5FmcTXLhkI+fKyXVeyGyxKMIl1RfgcCBDprJJt4JvlglEb3A==" 
+          crossorigin="anonymous"></script>
+  
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      color: #2d3748;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 15px;
+      margin-bottom: 30px;
+      font-size: 32px;
+    }
+    
+    h2 {
+      color: #4a5568;
+      margin-top: 40px;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+    
+    .status-section {
+      background: #f7fafc;
+      padding: 25px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .status-item {
+      padding: 15px;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .status-icon {
+      font-size: 24px;
+      min-width: 30px;
+      text-align: center;
+    }
+    
+    .status-text {
+      flex: 1;
+    }
+    
+    .status-label {
+      font-size: 12px;
+      color: #718096;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .status-value {
+      font-size: 14px;
+      color: #2d3748;
+      font-weight: 500;
+      margin-top: 4px;
+    }
+    
+    .test-section {
+      margin: 25px 0;
+      padding: 25px;
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .test-section:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-color: #667eea;
+    }
+    
+    .test-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    
+    .test-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .test-status {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .test-status.pending {
+      background: #edf2f7;
+      color: #718096;
+    }
+    
+    .test-status.running {
+      background: #fef5e7;
+      color: #d69e2e;
+    }
+    
+    .test-status.success {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+    
+    .test-status.error {
+      background: #fed7d7;
+      color: #742a2a;
+    }
+    
+    .test-description {
+      color: #718096;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    button:hover:not(:disabled) {
+      background: #5a67d8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    button:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    button.secondary {
+      background: #4a5568;
+    }
+    
+    button.secondary:hover:not(:disabled) {
+      background: #2d3748;
+    }
+    
+    button.success {
+      background: #48bb78;
+    }
+    
+    button.success:hover:not(:disabled) {
+      background: #38a169;
+    }
+    
+    button.danger {
+      background: #f56565;
+    }
+    
+    button.danger:hover:not(:disabled) {
+      background: #e53e3e;
+    }
+    
+    .result {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 6px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+      line-height: 1.6;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .result.success {
+      background: #c6f6d5;
+      border: 2px solid #9ae6b4;
+      color: #22543d;
+    }
+    
+    .result.error {
+      background: #fed7d7;
+      border: 2px solid #fc8181;
+      color: #742a2a;
+    }
+    
+    .result.info {
+      background: #bee3f8;
+      border: 2px solid #90cdf4;
+      color: #2c5282;
+    }
+    
+    .result.warning {
+      background: #fef5e7;
+      border: 2px solid #f6e05e;
+      color: #744210;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .data-preview {
+      background: #f7fafc;
+      padding: 20px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+    
+    .data-preview h3 {
+      margin-top: 0;
+      color: #667eea;
+      font-size: 16px;
+    }
+    
+    .field {
+      margin: 10px 0;
+      font-size: 13px;
+      display: flex;
+      padding: 8px 0;
+      border-bottom: 1px solid #edf2f7;
+    }
+    
+    .field:last-child {
+      border-bottom: none;
+    }
+    
+    .field strong {
+      color: #4a5568;
+      min-width: 200px;
+      font-weight: 600;
+    }
+    
+    .field span {
+      color: #2d3748;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #edf2f7;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+    
+    .alert {
+      padding: 15px 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+      display: flex;
+      align-items: start;
+      gap: 12px;
+    }
+    
+    .alert.info {
+      background: #bee3f8;
+      border-left: 4px solid #4299e1;
+      color: #2c5282;
+    }
+    
+    .alert.warning {
+      background: #fef5e7;
+      border-left: 4px solid #d69e2e;
+      color: #744210;
+    }
+    
+    .alert-icon {
+      font-size: 20px;
+      margin-top: 2px;
+    }
+    
+    .footer {
+      margin-top: 60px;
+      padding-top: 30px;
+      border-top: 2px solid #e2e8f0;
+      text-align: center;
+      color: #718096;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Export Functionality Test Suite</h1>
+    <p style="color: #718096; font-size: 16px; margin-top: -15px;">Comprehensive testing for PDF and Word export capabilities</p>
+    
+    <div class="status-section">
+      <h3 style="margin-top: 0; color: #2d3748;">📊 CDN Library Status</h3>
+      <div class="status-grid" id="cdnStatus">
+        <div class="status-item">
+          <div class="status-icon" id="jspdfIcon">⏳</div>
+          <div class="status-text">
+            <div class="status-label">jsPDF</div>
+            <div class="status-value" id="jspdfStatus">Checking...</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-icon" id="html2canvasIcon">⏳</div>
+          <div class="status-text">
+            <div class="status-label">html2canvas</div>
+            <div class="status-value" id="html2canvasStatus">Checking...</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-icon" id="docxIcon">⏳</div>
+          <div class="status-text">
+            <div class="status-label">docx</div>
+            <div class="status-value" id="docxStatus">Checking...</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-icon" id="fileSaverIcon">⏳</div>
+          <div class="status-text">
+            <div class="status-label">FileSaver</div>
+            <div class="status-value" id="fileSaverStatus">Checking...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert info">
+      <div class="alert-icon">ℹ️</div>
+      <div>
+        <strong>Important:</strong> This test page verifies that PDF and Word export functionality works correctly with CDN-loaded libraries. All libraries must load successfully for exports to function.
+      </div>
+    </div>
+
+    <div class="test-section">
+      <div class="test-header">
+        <div class="test-title">1️⃣ Generate Test Data</div>
+        <div class="test-status pending" id="test1Status">Pending</div>
+      </div>
+      <p class="test-description">
+        Creates comprehensive test data with all form fields populated to ensure complete coverage of export functionality.
+      </p>
+      <div class="button-group">
+        <button onclick="generateTestData()" id="generateBtn">
+          📝 Generate Full Test Data
+        </button>
+        <button onclick="generateMinimalData()" id="generateMinimalBtn" class="secondary">
+          📄 Generate Minimal Data
+        </button>
+      </div>
+      <div id="testDataResult"></div>
+    </div>
+
+    <div class="test-section">
+      <div class="test-header">
+        <div class="test-title">2️⃣ Test PDF Export</div>
+        <div class="test-status pending" id="test2Status">Pending</div>
+      </div>
+      <p class="test-description">
+        Exports the test data as a PDF document using jsPDF and html2canvas libraries from CDN.
+      </p>
+      <div class="button-group">
+        <button onclick="testPDFExport()" id="pdfBtn" disabled>
+          📑 Test PDF Export
+        </button>
+      </div>
+      <div id="pdfResult"></div>
+    </div>
+
+    <div class="test-section">
+      <div class="test-header">
+        <div class="test-title">3️⃣ Test Word Export</div>
+        <div class="test-status pending" id="test3Status">Pending</div>
+      </div>
+      <p class="test-description">
+        Exports the test data as a Word (.docx) document using the docx library from CDN.
+      </p>
+      <div class="button-group">
+        <button onclick="testWordExport()" id="wordBtn" disabled>
+          📄 Test Word Export
+        </button>
+      </div>
+      <div id="wordResult"></div>
+    </div>
+
+    <div class="test-section">
+      <div class="test-header">
+        <div class="test-title">4️⃣ Run All Tests</div>
+        <div class="test-status pending" id="test4Status">Pending</div>
+      </div>
+      <p class="test-description">
+        Executes all export tests sequentially and provides a comprehensive summary of results.
+      </p>
+      <div class="button-group">
+        <button onclick="runAllTests()" id="allTestsBtn" class="success">
+          ▶️ Run Complete Test Suite
+        </button>
+      </div>
+      <div id="allTestsResult"></div>
+    </div>
+
+    <div class="footer">
+      <p><strong>TH Köln Leistungsbeschreibung Generator</strong></p>
+      <p>Export Test Suite v1.0 | Built with ❤️ for reliable document generation</p>
+    </div>
+  </div>
+
+  <script type="module">
+    // Constants
+    const ALERT_DISPLAY_DURATION_MS = 10000;
+    const PROGRESS_ANIMATION_DELAY_MS = 500;
+    
+    // Import test utilities - Using relative paths for local development
+    let exportTests, pdfExport, wordExport;
+    let testData = null;
+    let librariesLoaded = false;
+    
+    // Check CDN library status on page load
+    window.addEventListener('load', () => {
+      checkCDNLibraries();
+      initializeModules();
+    });
+    
+    function checkCDNLibraries() {
+      const libraries = [
+        { name: 'jsPDF', check: () => window.jspdf, id: 'jspdf' },
+        { name: 'html2canvas', check: () => window.html2canvas, id: 'html2canvas' },
+        { name: 'docx', check: () => window.docx, id: 'docx' },
+        { name: 'FileSaver', check: () => window.saveAs, id: 'fileSaver' }
+      ];
+      
+      let allLoaded = true;
+      
+      libraries.forEach(lib => {
+        const isLoaded = lib.check();
+        const iconEl = document.getElementById(lib.id + 'Icon');
+        const statusEl = document.getElementById(lib.id + 'Status');
+        
+        if (isLoaded) {
+          iconEl.textContent = '✅';
+          statusEl.textContent = 'Loaded';
+          statusEl.style.color = '#22543d';
+        } else {
+          iconEl.textContent = '❌';
+          statusEl.textContent = 'Failed to load';
+          statusEl.style.color = '#742a2a';
+          allLoaded = false;
+        }
+      });
+      
+      librariesLoaded = allLoaded;
+      
+      if (!allLoaded) {
+        showAlert('warning', 'Some CDN libraries failed to load. Export functionality may not work correctly. Please check your internet connection and refresh the page.');
+      }
+    }
+    
+    async function initializeModules() {
+      try {
+        // Import modules using relative paths
+        const testsModule = await import('./src/utils/exportTests.js');
+        const pdfModule = await import('./src/utils/pdfExport.js');
+        const wordModule = await import('./src/utils/wordExport.js');
+        
+        exportTests = testsModule;
+        pdfExport = pdfModule;
+        wordExport = wordModule;
+        
+        // Make functions globally available
+        window.generateTestData = generateTestData;
+        window.generateMinimalData = generateMinimalData;
+        window.testPDFExport = testPDFExport;
+        window.testWordExport = testWordExport;
+        window.runAllTests = runAllTests;
+        
+        console.log('✅ All modules loaded successfully');
+      } catch (error) {
+        console.error('❌ Error loading modules:', error);
+        showAlert('error', `Failed to load export modules: ${error.message}. Make sure you're running this from a web server.`);
+      }
+    }
+    
+    function updateTestStatus(testNumber, status) {
+      const statusEl = document.getElementById(`test${testNumber}Status`);
+      statusEl.className = `test-status ${status}`;
+      statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+    }
+    
+    function showAlert(type, message) {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert ${type}`;
+      alertDiv.innerHTML = `
+        <div class="alert-icon">${type === 'warning' ? '⚠️' : type === 'error' ? '❌' : 'ℹ️'}</div>
+        <div>${message}</div>
+      `;
+      document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.test-section'));
+      
+      setTimeout(() => alertDiv.remove(), ALERT_DISPLAY_DURATION_MS);
+    }
+    
+    window.generateTestData = function() {
+      updateTestStatus(1, 'running');
+      const resultDiv = document.getElementById('testDataResult');
+      resultDiv.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;"><div class="loading"></div> Generating comprehensive test data...</div>';
+      
+      try {
+        testData = exportTests.createTestData();
+        
+        let html = '<div class="data-preview">';
+        html += '<h3>✅ Generated Test Data</h3>';
+        html += `<div class="field"><strong>User Role:</strong> <span>${testData.userRole}</span></div>`;
+        html += `<div class="field"><strong>Project Title:</strong> <span>${testData.projectTitle}</span></div>`;
+        html += `<div class="field"><strong>Vergabe Nr:</strong> <span>${testData.vergabeNr}</span></div>`;
+        html += `<div class="field"><strong>Service Type:</strong> <span>${testData.serviceType.toUpperCase()}</span></div>`;
+        html += `<div class="field"><strong>Contract Form:</strong> <span>${testData.contractForm}</span></div>`;
+        html += `<div class="field"><strong>Location:</strong> <span>${testData.location}</span></div>`;
+        html += `<div class="field"><strong>Bidder Requirements:</strong> <span>${testData.bidderRequirements.length} groups</span></div>`;
+        html += `<div class="field"><strong>Service Requirements:</strong> <span>${testData.serviceRequirements.length} items</span></div>`;
+        html += `<div class="field"><strong>Cost Rows:</strong> <span>${testData.costRows.length} items</span></div>`;
+        html += `<div class="field"><strong>Attachments:</strong> <span>${testData.attachments.length} files</span></div>`;
+        html += '</div>';
+        
+        html += '<div class="result success">✓ Test data generated successfully! You can now run PDF and Word export tests.</div>';
+        resultDiv.innerHTML = html;
+        
+        // Enable test buttons
+        document.getElementById('pdfBtn').disabled = false;
+        document.getElementById('wordBtn').disabled = false;
+        
+        updateTestStatus(1, 'success');
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="result error">✗ Error generating test data:\n\n${error.message}\n\n${error.stack}</div>`;
+        updateTestStatus(1, 'error');
+      }
+    };
+    
+    window.generateMinimalData = function() {
+      updateTestStatus(1, 'running');
+      const resultDiv = document.getElementById('testDataResult');
+      resultDiv.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;"><div class="loading"></div> Generating minimal test data...</div>';
+      
+      try {
+        testData = exportTests.createMinimalTestData();
+        
+        let html = '<div class="data-preview">';
+        html += '<h3>✅ Generated Minimal Test Data</h3>';
+        html += `<div class="field"><strong>User Role:</strong> <span>${testData.userRole}</span></div>`;
+        html += `<div class="field"><strong>Project Title:</strong> <span>${testData.projectTitle}</span></div>`;
+        html += `<div class="field"><strong>Service Type:</strong> <span>${testData.serviceType.toUpperCase()}</span></div>`;
+        html += '</div>';
+        
+        html += '<div class="result success">✓ Minimal test data generated! You can now run PDF and Word export tests.</div>';
+        resultDiv.innerHTML = html;
+        
+        // Enable test buttons
+        document.getElementById('pdfBtn').disabled = false;
+        document.getElementById('wordBtn').disabled = false;
+        
+        updateTestStatus(1, 'success');
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="result error">✗ Error generating minimal data:\n\n${error.message}</div>`;
+        updateTestStatus(1, 'error');
+      }
+    };
+
+    window.testPDFExport = async function() {
+      if (!testData) {
+        showAlert('warning', 'Please generate test data first!');
+        return;
+      }
+      
+      if (!librariesLoaded) {
+        showAlert('error', 'CDN libraries not loaded. Cannot test PDF export.');
+        return;
+      }
+      
+      updateTestStatus(2, 'running');
+      const resultDiv = document.getElementById('pdfResult');
+      resultDiv.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;"><div class="loading"></div> Generating PDF document...</div>';
+      
+      try {
+        const result = await pdfExport.exportToPDF(testData, 'test-export.pdf');
+        
+        if (result.success) {
+          resultDiv.innerHTML = `<div class="result success">✓ PDF Export Successful!\n\n${result.message}\n\nThe PDF should have downloaded to your default downloads folder.\nPlease open it and verify that all data fields are present and formatted correctly.</div>`;
+          updateTestStatus(2, 'success');
+        } else {
+          resultDiv.innerHTML = `<div class="result error">✗ PDF Export Failed:\n\n${result.message}</div>`;
+          updateTestStatus(2, 'error');
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="result error">✗ PDF Export Error:\n\n${error.message}\n\n${error.stack}</div>`;
+        updateTestStatus(2, 'error');
+      }
+    };
+
+    window.testWordExport = async function() {
+      if (!testData) {
+        showAlert('warning', 'Please generate test data first!');
+        return;
+      }
+      
+      if (!librariesLoaded) {
+        showAlert('error', 'CDN libraries not loaded. Cannot test Word export.');
+        return;
+      }
+      
+      updateTestStatus(3, 'running');
+      const resultDiv = document.getElementById('wordResult');
+      resultDiv.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;"><div class="loading"></div> Generating Word document...</div>';
+      
+      try {
+        const result = await wordExport.exportToWord(testData, 'test-export.docx');
+        
+        if (result.success) {
+          resultDiv.innerHTML = `<div class="result success">✓ Word Export Successful!\n\n${result.message}\n\nThe Word document should have downloaded to your default downloads folder.\nPlease open it in Microsoft Word or compatible software and verify all data is present.</div>`;
+          updateTestStatus(3, 'success');
+        } else {
+          resultDiv.innerHTML = `<div class="result error">✗ Word Export Failed:\n\n${result.message}</div>`;
+          updateTestStatus(3, 'error');
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="result error">✗ Word Export Error:\n\n${error.message}\n\n${error.stack}</div>`;
+        updateTestStatus(3, 'error');
+      }
+    };
+
+    window.runAllTests = async function() {
+      if (!librariesLoaded) {
+        showAlert('error', 'CDN libraries not loaded. Cannot run tests.');
+        return;
+      }
+      
+      updateTestStatus(4, 'running');
+      const resultDiv = document.getElementById('allTestsResult');
+      let output = '';
+      
+      try {
+        output += 'Running Complete Test Suite\n';
+        output += '='.repeat(60) + '\n\n';
+        
+        // Step 1: Generate test data
+        output += '1️⃣  Generating test data...\n';
+        testData = exportTests.createTestData();
+        output += '   ✅ Test data generated\n\n';
+        document.getElementById('pdfBtn').disabled = false;
+        document.getElementById('wordBtn').disabled = false;
+        updateTestStatus(1, 'success');
+        
+        // Display progress
+        resultDiv.innerHTML = `<div class="result info">${output}</div><div class="progress-bar"><div class="progress-fill" style="width: 25%"></div></div>`;
+        await new Promise(resolve => setTimeout(resolve, PROGRESS_ANIMATION_DELAY_MS));
+        
+        // Step 2: Test PDF export
+        output += '2️⃣  Testing PDF export...\n';
+        resultDiv.innerHTML = `<div class="result info">${output}   ⏳ Generating PDF...</div><div class="progress-bar"><div class="progress-fill" style="width: 50%"></div></div>`;
+        
+        const pdfResult = await pdfExport.exportToPDF(testData, 'full-test-export.pdf');
+        if (pdfResult.success) {
+          output += '   ✅ PDF exported successfully\n\n';
+          updateTestStatus(2, 'success');
+        } else {
+          output += `   ❌ PDF export failed: ${pdfResult.message}\n\n`;
+          updateTestStatus(2, 'error');
+        }
+        
+        resultDiv.innerHTML = `<div class="result info">${output}</div><div class="progress-bar"><div class="progress-fill" style="width: 75%"></div></div>`;
+        await new Promise(resolve => setTimeout(resolve, PROGRESS_ANIMATION_DELAY_MS));
+        
+        // Step 3: Test Word export
+        output += '3️⃣  Testing Word export...\n';
+        resultDiv.innerHTML = `<div class="result info">${output}   ⏳ Generating Word document...</div><div class="progress-bar"><div class="progress-fill" style="width: 75%"></div></div>`;
+        
+        const wordResult = await wordExport.exportToWord(testData, 'full-test-export.docx');
+        if (wordResult.success) {
+          output += '   ✅ Word exported successfully\n\n';
+          updateTestStatus(3, 'success');
+        } else {
+          output += `   ❌ Word export failed: ${wordResult.message}\n\n`;
+          updateTestStatus(3, 'error');
+        }
+        
+        // Step 4: Test with minimal data
+        output += '4️⃣  Testing with minimal data...\n';
+        resultDiv.innerHTML = `<div class="result info">${output}   ⏳ Testing minimal exports...</div><div class="progress-bar"><div class="progress-fill" style="width: 90%"></div></div>`;
+        
+        const minimalData = exportTests.createMinimalTestData();
+        const pdfMinResult = await pdfExport.exportToPDF(minimalData, 'minimal-test-export.pdf');
+        const wordMinResult = await wordExport.exportToWord(minimalData, 'minimal-test-export.docx');
+        
+        if (pdfMinResult.success && wordMinResult.success) {
+          output += '   ✅ Minimal data exports successful\n\n';
+        } else {
+          output += '   ⚠️  Some minimal data exports had issues\n\n';
+        }
+        
+        // Summary
+        output += '='.repeat(60) + '\n';
+        output += 'TEST SUMMARY\n';
+        output += '='.repeat(60) + '\n\n';
+        
+        const allSuccess = pdfResult.success && wordResult.success && 
+                          pdfMinResult.success && wordMinResult.success;
+        
+        if (allSuccess) {
+          output += '✅ All tests passed successfully!\n\n';
+          output += 'The following files should have been downloaded:\n';
+          output += '  • full-test-export.pdf (comprehensive test data)\n';
+          output += '  • full-test-export.docx (comprehensive test data)\n';
+          output += '  • minimal-test-export.pdf (minimal test data)\n';
+          output += '  • minimal-test-export.docx (minimal test data)\n\n';
+          output += 'Please verify:\n';
+          output += '  1. All files downloaded successfully\n';
+          output += '  2. All data fields are present in documents\n';
+          output += '  3. Formatting is correct and consistent\n';
+          output += '  4. No errors or corrupted content\n';
+          
+          resultDiv.innerHTML = `<div class="result success">${output}</div>`;
+          updateTestStatus(4, 'success');
+        } else {
+          output += '⚠️  Some tests failed. Please review the results above.\n\n';
+          output += 'Common Issues:\n';
+          output += '  • Check browser console for detailed error messages\n';
+          output += '  • Ensure all CDN libraries loaded correctly\n';
+          output += '  • Verify internet connection is stable\n';
+          output += '  • Try refreshing the page and running tests again\n';
+          
+          resultDiv.innerHTML = `<div class="result warning">${output}</div>`;
+          updateTestStatus(4, 'error');
+        }
+        
+        resultDiv.innerHTML += '<div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>';
+        
+      } catch (error) {
+        output += `\n❌ Test Suite Error:\n\n${error.message}\n\n${error.stack}`;
+        resultDiv.innerHTML = `<div class="result error">${output}</div>`;
+        updateTestStatus(4, 'error');
+      }
+    };
+  </script>
+</body>
+</html>
