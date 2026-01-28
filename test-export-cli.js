@@ -193,5 +193,48 @@ if (issues.length === 0) {
 
 console.log('='.repeat(80));
 
+// Test 6: Create test recommendations
+console.log('TEST 6: Testing Recommendations');
+console.log('-'.repeat(80));
+console.log();
+console.log('To test the actual export functionality:');
+console.log();
+console.log('1. Build the project:');
+console.log('   npm run build');
+console.log();
+console.log('2. Open dist/index.html in a browser');
+console.log('   - Or run: npm run dev and open http://localhost:8080');
+console.log();
+console.log('3. Fill in the form with test data');
+console.log();
+console.log('4. Click "Export PDF" and "Export Word" buttons');
+console.log();
+console.log('5. Verify that:');
+console.log('   ✓ PDF downloads successfully');
+console.log('   ✓ Word document downloads successfully');
+console.log('   ✓ Both files contain all form data');
+console.log('   ✓ Formatting is correct and consistent');
+console.log();
+console.log('For automated testing, open test-exports.html in a browser:');
+console.log('   file://' + path.join(__dirname, 'test-exports.html'));
+console.log();
+console.log('Common Issues and Solutions:');
+console.log('-'.repeat(80));
+console.log();
+console.log('Issue: "jsPDF library not loaded from CDN"');
+console.log('Solution: Check internet connection and try again. CDN may be blocked.');
+console.log();
+console.log('Issue: "docx library not loaded from CDN"');
+console.log('Solution: Check internet connection. Verify CDN URLs are accessible.');
+console.log();
+console.log('Issue: Export button does nothing');
+console.log('Solution: Check browser console for errors. Ensure all CDN scripts loaded.');
+console.log();
+console.log('Issue: SRI integrity check fails');
+console.log('Solution: CDN file may have changed. Update SRI hash in public/index.html');
+console.log('  Generate new SRI hash: https://www.srihash.org/');
+console.log();
+console.log('='.repeat(80));
+
 // Exit with appropriate code
 process.exit(issues.length === 0 ? 0 : 1);
