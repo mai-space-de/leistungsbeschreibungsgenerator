@@ -28,23 +28,29 @@ The following libraries are loaded via CDN in `public/index.html`:
    - Global: `window.saveAs`
 
 2. **docx** (v9.5.1) - For generating Word documents
-   - CDN: `https://unpkg.com/docx@9.5.1/build/index.js`
+   - CDN: `https://cdn.jsdelivr.net/npm/docx@9.5.1/build/index.min.js`
    - Global: `window.docx`
 
-3. **html2pdf.js** (v0.10.2) - For PDF generation
-   - CDN: `https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js`
-   - Global: `window.html2pdf`
+3. **jsPDF** (v2.5.2) - For PDF generation
+   - CDN: `https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js`
+   - Global: `window.jspdf`
+
+4. **html2canvas** (v1.4.1) - For rendering HTML to canvas for PDF generation
+   - CDN: `https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js`
+   - Global: `window.html2canvas`
 
 #### Security Considerations
 
-**Note:** The CDN script tags currently do not include Subresource Integrity (SRI) hashes. This is a known limitation. For improved security in production environments, consider:
+✅ **Security Implemented:** All CDN script tags include Subresource Integrity (SRI) hashes and CORS attributes for enhanced security:
 
-1. Adding `integrity` and `crossorigin` attributes to the script tags
-2. Generating SRI hashes using tools like https://www.srihash.org/
-3. Hosting the libraries locally instead of using CDN (though this breaks the single-file HTML goal)
-4. Using a trusted CDN with strong security practices
+- Each script tag includes `integrity` attribute with SHA-512 hash
+- Each script tag includes `crossorigin="anonymous"` attribute
+- This ensures that scripts cannot be tampered with during transit
+- If CDN files are modified, the browser will refuse to execute them
 
-The trade-off here is between the single-file HTML requirement and enhanced security via SRI verification.
+To update SRI hashes when upgrading library versions:
+1. Generate new SRI hashes using https://www.srihash.org/
+2. Update the `integrity` attribute in `public/index.html`
 
 ### How It Works
 
@@ -60,9 +66,80 @@ If you need to update export functionality:
 - ✅ **DO**: Keep using CDN libraries accessed via `window` globals
 - ✅ **DO**: Update CDN versions in `public/index.html` if needed
 - ✅ **DO**: Update webpack `externals` configuration if adding new CDN libraries
-- ❌ **DON'T**: Add docx, file-saver, or html2pdf.js to package.json dependencies
-- ❌ **DON'T**: Import these libraries using ES6 `import` statements
-- ❌ **DON'T**: Remove the `externals` configuration from webpack.config.js
+- ❌ **DON'T**: Add docx, file-saver, jspdf, or html2canvas to package.json dependencies
+- ❌ **DON'T**: Import these libraries using ES6 `import` statements (they must be accessed via `window.*`)
+- ❌ **DON'T**: Modify the CDN script tags or remove SRI integrity hashes
+
+## Testing Export Functionality
+
+The project includes comprehensive testing tools for PDF and Word export functionality:
+
+### Command-Line Test Script
+
+Run automated checks to verify CDN configuration and export module structure:
+
+```bash
+node test-export-cli.js
+```
+
+This script validates:
+- CDN library URLs and SRI hashes
+- Export module error handling
+- File structure and configuration
+- Build output (dist/index.html)
+
+### Browser-Based Test Suite
+
+For interactive testing of actual export functionality:
+
+1. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+2. Open the test page:
+   ```
+   http://localhost:8080/test-export-browser.html
+   ```
+
+Or build the project and open `test-export-browser.html` directly in a browser.
+
+The browser test suite provides:
+- **CDN Library Status** - Real-time verification that all libraries loaded
+- **Test Data Generation** - Creates comprehensive test data automatically
+- **PDF Export Testing** - Downloads and verifies PDF generation
+- **Word Export Testing** - Downloads and verifies Word document generation
+- **Complete Test Suite** - Runs all tests sequentially with detailed results
+
+### Manual Testing
+
+You can also test exports manually in the main application:
+
+1. Run `npm run dev` or `npm run build`
+2. Open the application in a browser
+3. Fill in the form with test data
+4. Click "Export PDF" or "Export Word" buttons
+5. Verify downloaded files contain all data
+
+### Troubleshooting Export Issues
+
+**Issue: "jsPDF library not loaded from CDN"**
+- Check internet connection
+- Verify CDN is accessible (not blocked by firewall/proxy)
+- Check browser console for CORS or SRI errors
+
+**Issue: "docx library not loaded from CDN"**
+- Same as above - check network and CDN accessibility
+
+**Issue: SRI integrity check fails**
+- CDN file may have been updated
+- Regenerate SRI hash: https://www.srihash.org/
+- Update `integrity` attribute in `public/index.html`
+
+**Issue: Export downloads but file is empty/corrupted**
+- Check browser console for JavaScript errors
+- Ensure all form fields are properly filled
+- Try with minimal test data first
 
 ## Installation
 
@@ -128,7 +205,8 @@ src/
 - **Babel** - JavaScript transpilation
 - **docx** (CDN) - Word document generation
 - **FileSaver.js** (CDN) - File download functionality
-- **html2pdf.js** (CDN) - PDF generation
+- **jsPDF** (CDN) - PDF generation
+- **html2canvas** (CDN) - HTML to canvas rendering for PDF
 
 ## License
 
