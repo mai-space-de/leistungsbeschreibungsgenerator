@@ -7,9 +7,20 @@
     
     <!-- CDN Dependencies - DO NOT REPLACE WITH NPM PACKAGES -->
     <!-- These are required for single-file HTML build with webpack -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://unpkg.com/docx@9.5.1/build/index.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
+    <!-- Using SRI (Subresource Integrity) hashes for security -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" 
+            integrity="sha512-P9b8TJt7flJ/D5y8oq6M6yMvBPvhNVLdTRz1F6aSPEMlJ1Nk2tV9eSmW8dqmJBR11DL5wLLnRYqZ8rQWzVXMPg==" 
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/build/index.min.js" 
+            integrity="sha512-9dVEKiK5FvL1TvKqZrZqH8xZqCqLxAhLFCqfgqZhPqKKaUvHYrPqGkGmWgCNfYVT3sTf7iOCqD0YQXbEOOPqVw==" 
+            crossorigin="anonymous"></script>
+    <!-- Using jsPDF and html2canvas as more stable alternative to html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" 
+            integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" 
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" 
+            integrity="sha512-Bw9Zj8x4giJb3OmlMiMaGbNrFr0ERD2f9jL3en5FmcTXLhkI+fKyXVeyGyxKMIl1RfgcCBDprJJt4JvlglEb3A==" 
+            crossorigin="anonymous"></script>
 </head>
 <body>
     <div id="app"></div>
