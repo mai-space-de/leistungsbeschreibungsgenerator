@@ -12,7 +12,7 @@ This application provides a step-by-step wizard to create comprehensive service 
 
 ### Why CDN Instead of NPM?
 
-The project uses webpack to create a single, self-contained HTML file with all JavaScript and CSS inlined. However, some libraries (docx, FileSaver, html2pdf.js) are too large or have compatibility issues when bundled directly into the webpack output. 
+The project uses webpack to create a single, self-contained HTML file with all JavaScript and CSS inlined. However, some libraries (docx, FileSaver, jsPDF, html2canvas) are too large or have compatibility issues when bundled directly into the webpack output. 
 
 **DO NOT** convert these CDN dependencies to npm package imports, as this will:
 - ❌ Break the single-file build process
@@ -195,7 +195,7 @@ src/
 │       └── ContractDetailsStep.vue # Step 6: Contract details (Einkauf only)
 └── utils/
     ├── wordExport.js              # Word document export (uses CDN docx)
-    └── pdfExport.js               # PDF export (uses CDN html2pdf)
+    └── pdfExport.js               # PDF export (uses CDN jsPDF and html2canvas)
 ```
 
 ## Technologies

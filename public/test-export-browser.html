@@ -500,11 +500,11 @@
   </div>
 
   <script type="module">
-    // Import test utilities - Using relative paths for local development
-    // These will be resolved at runtime
-    const scriptPath = new URL(document.currentScript.src || window.location.href).pathname;
-    const basePath = scriptPath.substring(0, scriptPath.lastIndexOf('/'));
+    // Constants
+    const ALERT_DISPLAY_DURATION_MS = 10000;
+    const PROGRESS_ANIMATION_DELAY_MS = 500;
     
+    // Import test utilities - Using relative paths for local development
     let exportTests, pdfExport, wordExport;
     let testData = null;
     let librariesLoaded = false;
@@ -589,7 +589,7 @@
       `;
       document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.test-section'));
       
-      setTimeout(() => alertDiv.remove(), 10000);
+      setTimeout(() => alertDiv.remove(), ALERT_DISPLAY_DURATION_MS);
     }
     
     window.generateTestData = function() {
@@ -743,7 +743,7 @@
         
         // Display progress
         resultDiv.innerHTML = `<div class="result info">${output}</div><div class="progress-bar"><div class="progress-fill" style="width: 25%"></div></div>`;
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, PROGRESS_ANIMATION_DELAY_MS));
         
         // Step 2: Test PDF export
         output += '2️⃣  Testing PDF export...\n';
@@ -759,7 +759,7 @@
         }
         
         resultDiv.innerHTML = `<div class="result info">${output}</div><div class="progress-bar"><div class="progress-fill" style="width: 75%"></div></div>`;
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, PROGRESS_ANIMATION_DELAY_MS));
         
         // Step 3: Test Word export
         output += '3️⃣  Testing Word export...\n';

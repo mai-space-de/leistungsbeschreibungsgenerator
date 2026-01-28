@@ -51,18 +51,30 @@ console.log('-'.repeat(80));
 const indexPath = path.join(__dirname, 'public', 'index.html');
 const indexContent = fs.readFileSync(indexPath, 'utf8');
 
-// Extract CDN script URLs
+// Extract CDN script URLs with their integrity hashes
 const scriptRegex = /<script[^>]+src="([^"]+)"[^>]*>/g;
 const cdnUrls = [];
 let match;
 
 while ((match = scriptRegex.exec(indexContent)) !== null) {
-  cdnUrls.push(match[1]);
+  const url = match[1];
+  const fullTag = match[0];
+  
+  // Extract integrity hash if present
+  const integrityMatch = fullTag.match(/integrity="([^"]+)"/);
+  const crossoriginMatch = fullTag.match(/crossorigin="([^"]+)"/);
+  
+  cdnUrls.push({
+    url,
+    fullTag,
+    integrity: integrityMatch ? integrityMatch[1] : null,
+    crossorigin: crossoriginMatch ? crossoriginMatch[1] : null
+  });
 }
 
 console.log('Found CDN URLs in public/index.html:');
-cdnUrls.forEach((url, index) => {
-  console.log(`  ${index + 1}. ${url}`);
+cdnUrls.forEach((item, index) => {
+  console.log(`  ${index + 1}. ${item.url}`);
 });
 console.log();
 
@@ -70,13 +82,13 @@ console.log();
 console.log('TEST 3: Validating CDN URLs (checking format and structure)');
 console.log('-'.repeat(80));
 
-const urlValidation = cdnUrls.map(url => {
-  const hasHttps = url.startsWith('https://');
-  const hasSRI = indexContent.includes(`integrity=`) && indexContent.includes(url);
-  const hasCrossOrigin = indexContent.includes(`crossorigin=`) && indexContent.includes(url);
+const urlValidation = cdnUrls.map(item => {
+  const hasHttps = item.url.startsWith('https://');
+  const hasSRI = item.integrity !== null;
+  const hasCrossOrigin = item.crossorigin !== null;
   
   return {
-    url,
+    url: item.url,
     hasHttps,
     hasSRI,
     hasCrossOrigin
