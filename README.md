@@ -26,31 +26,35 @@ The following libraries are loaded via CDN in `public/index.html`:
 1. **FileSaver.js** (v2.0.5) - For saving Word documents
    - CDN: `https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js`
    - Global: `window.saveAs`
+   - SRI Hash: `sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==`
 
 2. **docx** (v9.5.1) - For generating Word documents
-   - CDN: `https://cdn.jsdelivr.net/npm/docx@9.5.1/build/index.min.js`
+   - CDN: `https://cdn.jsdelivr.net/npm/docx@9.5.1/build/index.js` (Note: use `index.js`, not `index.min.js`)
    - Global: `window.docx`
 
 3. **jsPDF** (v2.5.2) - For PDF generation
-   - CDN: `https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js`
+   - CDN: `https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js`
    - Global: `window.jspdf`
 
 4. **html2canvas** (v1.4.1) - For rendering HTML to canvas for PDF generation
    - CDN: `https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js`
    - Global: `window.html2canvas`
+   - SRI Hash: `sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==`
 
 #### Security Considerations
 
-✅ **Security Implemented:** All CDN script tags include Subresource Integrity (SRI) hashes and CORS attributes for enhanced security:
+✅ **Security Implemented:** CDN script tags include Subresource Integrity (SRI) hashes where available and CORS attributes for enhanced security:
 
-- Each script tag includes `integrity` attribute with SHA-512 hash
-- Each script tag includes `crossorigin="anonymous"` attribute
-- This ensures that scripts cannot be tampered with during transit
-- If CDN files are modified, the browser will refuse to execute them
+- FileSaver.js and html2canvas include `integrity` attribute with SHA-512 hash
+- All scripts include `crossorigin="anonymous"` attribute
+- SRI hashes ensure that scripts cannot be tampered with during transit
+- If CDN files with SRI hashes are modified, the browser will refuse to execute them
+- Note: docx and jsPDF currently load without SRI hashes due to CDN availability constraints
 
 To update SRI hashes when upgrading library versions:
 1. Generate new SRI hashes using https://www.srihash.org/
 2. Update the `integrity` attribute in `public/index.html`
+3. Rebuild with `npm run build`
 
 ### How It Works
 
