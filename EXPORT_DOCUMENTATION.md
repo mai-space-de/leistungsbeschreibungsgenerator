@@ -6,7 +6,7 @@ Die Leistungsbeschreibung Generator App verfügt über integrierte Export-Funkti
 
 ## Verwendete Bibliotheken
 
-- **PDF-Export**: `jsPDF` v2.5.2 and `html2canvas` v1.4.1
+- **PDF-Export**: `jsPDF` v2.5.2 und `html2canvas` v1.4.1
 - **Word-Export**: `docx` v9.5.1
 - **Datei-Download**: `file-saver` v2.0.5
 

@@ -19,12 +19,14 @@ export async function exportToPDF(formData, filename = 'Leistungsbeschreibung.pd
   const { jsPDF } = window.jspdf;
   const html2canvas = window.html2canvas;
 
+  let element = null;
+  
   try {
     // Create HTML content for PDF
     const htmlContent = generateHTMLContent(formData);
     
     // Generate and download PDF
-    const element = document.createElement('div');
+    element = document.createElement('div');
     element.innerHTML = htmlContent;
     element.style.display = 'block';
     element.style.position = 'absolute';
@@ -33,8 +35,8 @@ export async function exportToPDF(formData, filename = 'Leistungsbeschreibung.pd
     element.style.width = '794px'; // A4 width in pixels at 96 DPI
     document.body.appendChild(element);
 
-    // Wait for any fonts or styles to load
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Wait for fonts and styles to load - increased timeout for reliability
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Convert HTML to canvas
     const canvas = await html2canvas(element, {
@@ -92,13 +94,15 @@ export async function exportToPDF(formData, filename = 'Leistungsbeschreibung.pd
     // Save PDF
     pdf.save(filename);
     
-    // Clean up
-    document.body.removeChild(element);
-    
     return { success: true, message: 'PDF erfolgreich exportiert!' };
   } catch (error) {
     console.error('PDF Export Error:', error);
     return { success: false, message: 'Fehler beim PDF-Export: ' + error.message };
+  } finally {
+    // Clean up - ensure element is always removed
+    if (element && element.parentNode) {
+      document.body.removeChild(element);
+    }
   }
 }
 

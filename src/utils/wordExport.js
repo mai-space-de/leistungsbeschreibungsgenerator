@@ -30,7 +30,7 @@ export async function exportToWord(formData, filename = 'Leistungsbeschreibung.d
         properties: {
           page: {
             margin: {
-              top: 1417,    // 25mm in twips (1 inch = 1440 twips, 25mm ≈ 1417 twips)
+              top: 1417,    // 25mm in twips (25mm / 25.4mm per inch * 1440 twips per inch ≈ 1417 twips)
               right: 1417,
               bottom: 1417,
               left: 1417,
