@@ -62,7 +62,7 @@ function generateDocumentSections(formData, docxClasses) {
   const { Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle, AlignmentType, UnderlineType } = docxClasses;
   const sections = [];
 
-  // Title
+  // Title with bottom border effect
   sections.push(
     new Paragraph({
       children: [
@@ -71,11 +71,19 @@ function generateDocumentSections(formData, docxClasses) {
           bold: true,
           size: 32, // 16pt
           font: 'Arial',
+          color: '000000',
         }),
       ],
       heading: HeadingLevel.TITLE,
       alignment: AlignmentType.CENTER,
-      spacing: { after: 400 },
+      spacing: { after: 200 },
+      border: {
+        bottom: {
+          style: BorderStyle.SINGLE,
+          size: 6, // Thicker border to simulate 2px
+          color: '0066CC',
+        },
+      },
     })
   );
 
@@ -93,12 +101,12 @@ function generateDocumentSections(formData, docxClasses) {
           }),
         ],
         alignment: AlignmentType.CENTER,
-        spacing: { after: 400 },
+        spacing: { after: 500 },
       })
     );
   }
 
-  // Basic configuration
+  // Basic configuration with background styling
   if (formData.serviceType || formData.contractForm || formData.location) {
     sections.push(
       new Paragraph({
@@ -113,10 +121,25 @@ function generateDocumentSections(formData, docxClasses) {
         ],
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 320, after: 160 },
+        border: {
+          bottom: {
+            style: BorderStyle.SINGLE,
+            size: 1,
+            color: 'DDDDDD',
+          },
+          left: {
+            style: BorderStyle.SINGLE,
+            size: 12, // Thick left border to simulate 4px
+            color: '0066CC',
+          },
+        },
+        shading: {
+          fill: 'F8F9FA',
+        },
       })
     );
 
-    // Create configuration table
+    // Create configuration table with improved styling
     const configRows = [];
     
     if (formData.serviceType) {
@@ -124,12 +147,27 @@ function generateDocumentSections(formData, docxClasses) {
         new TableRow({
           children: [
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: 'Leistungsart:', bold: true })] })],
+              children: [new Paragraph({ 
+                children: [new TextRun({ 
+                  text: 'Leistungsart:', 
+                  bold: true,
+                  size: 20,
+                  font: 'Arial'
+                })] 
+              })],
               width: { size: 50, type: WidthType.PERCENTAGE },
+              margins: { top: 100, bottom: 100, left: 200, right: 200 },
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: formData.serviceType })] })],
+              children: [new Paragraph({ 
+                children: [new TextRun({ 
+                  text: getServiceTypeText(formData.serviceType),
+                  size: 20,
+                  font: 'Arial'
+                })] 
+              })],
               width: { size: 50, type: WidthType.PERCENTAGE },
+              margins: { top: 100, bottom: 100, left: 200, right: 200 },
             }),
           ],
         })
@@ -141,12 +179,27 @@ function generateDocumentSections(formData, docxClasses) {
         new TableRow({
           children: [
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: 'Vertragsform:', bold: true })] })],
+              children: [new Paragraph({ 
+                children: [new TextRun({ 
+                  text: 'Vertragsform:', 
+                  bold: true,
+                  size: 20,
+                  font: 'Arial'
+                })] 
+              })],
               width: { size: 50, type: WidthType.PERCENTAGE },
+              margins: { top: 100, bottom: 100, left: 200, right: 200 },
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: formData.contractForm })] })],
+              children: [new Paragraph({ 
+                children: [new TextRun({ 
+                  text: getContractFormText(formData.contractForm),
+                  size: 20,
+                  font: 'Arial'
+                })] 
+              })],
               width: { size: 50, type: WidthType.PERCENTAGE },
+              margins: { top: 100, bottom: 100, left: 200, right: 200 },
             }),
           ],
         })
@@ -158,12 +211,27 @@ function generateDocumentSections(formData, docxClasses) {
         new TableRow({
           children: [
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: 'Ort:', bold: true })] })],
+              children: [new Paragraph({ 
+                children: [new TextRun({ 
+                  text: 'Ort:', 
+                  bold: true,
+                  size: 20,
+                  font: 'Arial'
+                })] 
+              })],
               width: { size: 50, type: WidthType.PERCENTAGE },
+              margins: { top: 100, bottom: 100, left: 200, right: 200 },
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: formData.location })] })],
+              children: [new Paragraph({ 
+                children: [new TextRun({ 
+                  text: formData.location,
+                  size: 20,
+                  font: 'Arial'
+                })] 
+              })],
               width: { size: 50, type: WidthType.PERCENTAGE },
+              margins: { top: 100, bottom: 100, left: 200, right: 200 },
             }),
           ],
         })
@@ -176,18 +244,27 @@ function generateDocumentSections(formData, docxClasses) {
           rows: configRows,
           width: { size: 100, type: WidthType.PERCENTAGE },
           borders: {
-            top: { style: BorderStyle.SINGLE, size: 1 },
-            bottom: { style: BorderStyle.SINGLE, size: 1 },
-            left: { style: BorderStyle.SINGLE, size: 1 },
-            right: { style: BorderStyle.SINGLE, size: 1 },
-            insideHorizontal: { style: BorderStyle.SINGLE, size: 1 },
-            insideVertical: { style: BorderStyle.SINGLE, size: 1 },
+            top: { style: BorderStyle.NONE },
+            bottom: { style: BorderStyle.NONE },
+            left: { style: BorderStyle.NONE },
+            right: { style: BorderStyle.NONE },
+            insideHorizontal: { style: BorderStyle.NONE },
+            insideVertical: { style: BorderStyle.NONE },
+          },
+          shading: {
+            fill: 'F8F9FA',
+          },
+          margins: {
+            top: 200,
+            bottom: 200,
+            left: 300,
+            right: 300,
           },
         })
       );
     }
 
-    sections.push(new Paragraph({ text: '', spacing: { after: 240 } }));
+    sections.push(new Paragraph({ text: '', spacing: { after: 400 } }));
   }
 
   // Current situation
@@ -205,6 +282,13 @@ function generateDocumentSections(formData, docxClasses) {
         ],
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 320, after: 160 },
+        border: {
+          bottom: {
+            style: BorderStyle.SINGLE,
+            size: 1,
+            color: 'DDDDDD',
+          },
+        },
       })
     );
 
@@ -215,9 +299,10 @@ function generateDocumentSections(formData, docxClasses) {
             text: formData.currentSituation,
             size: 20, // 10pt
             font: 'Arial',
+            color: '333333',
           }),
         ],
-        spacing: { after: 240 },
+        spacing: { after: 320 },
         alignment: AlignmentType.JUSTIFIED,
       })
     );
@@ -238,8 +323,39 @@ function generateDocumentSections(formData, docxClasses) {
         ],
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 320, after: 160 },
+        border: {
+          bottom: {
+            style: BorderStyle.SINGLE,
+            size: 1,
+            color: 'DDDDDD',
+          },
+        },
       })
     );
+
+    // Add STLB number if available
+    if (formData.stlbNumber) {
+      sections.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: 'STLB-Nummer: ',
+              bold: true,
+              size: 20,
+              font: 'Arial',
+              color: '000000',
+            }),
+            new TextRun({
+              text: formData.stlbNumber,
+              size: 20,
+              font: 'Arial',
+              color: '333333',
+            }),
+          ],
+          spacing: { after: 160 },
+        })
+      );
+    }
 
     sections.push(
       new Paragraph({
@@ -248,9 +364,10 @@ function generateDocumentSections(formData, docxClasses) {
             text: formData.serviceDefinition,
             size: 20, // 10pt
             font: 'Arial',
+            color: '333333',
           }),
         ],
-        spacing: { after: 240 },
+        spacing: { after: 320 },
         alignment: AlignmentType.JUSTIFIED,
       })
     );
@@ -271,6 +388,13 @@ function generateDocumentSections(formData, docxClasses) {
         ],
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 320, after: 160 },
+        border: {
+          bottom: {
+            style: BorderStyle.SINGLE,
+            size: 1,
+            color: 'DDDDDD',
+          },
+        },
       })
     );
 
@@ -278,10 +402,21 @@ function generateDocumentSections(formData, docxClasses) {
       sections.push(
         new Paragraph({
           children: [
-            new TextRun({ text: 'Startdatum: ', bold: true, size: 20, font: 'Arial' }),
-            new TextRun({ text: formatDate(formData.startDate), size: 20, font: 'Arial' }),
+            new TextRun({ 
+              text: 'Startdatum: ', 
+              bold: true, 
+              size: 20, 
+              font: 'Arial',
+              color: '000000'
+            }),
+            new TextRun({ 
+              text: formatDate(formData.startDate), 
+              size: 20, 
+              font: 'Arial',
+              color: '333333'
+            }),
           ],
-          spacing: { after: 120 },
+          spacing: { after: 160 },
         })
       );
     }
@@ -290,10 +425,21 @@ function generateDocumentSections(formData, docxClasses) {
       sections.push(
         new Paragraph({
           children: [
-            new TextRun({ text: 'Enddatum: ', bold: true, size: 20, font: 'Arial' }),
-            new TextRun({ text: formatDate(formData.endDate), size: 20, font: 'Arial' }),
+            new TextRun({ 
+              text: 'Enddatum: ', 
+              bold: true, 
+              size: 20, 
+              font: 'Arial',
+              color: '000000'
+            }),
+            new TextRun({ 
+              text: formatDate(formData.endDate), 
+              size: 20, 
+              font: 'Arial',
+              color: '333333'
+            }),
           ],
-          spacing: { after: 240 },
+          spacing: { after: 320 },
         })
       );
     }
@@ -314,11 +460,17 @@ function generateDocumentSections(formData, docxClasses) {
         ],
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 320, after: 160 },
+        border: {
+          bottom: {
+            style: BorderStyle.SINGLE,
+            size: 1,
+            color: 'DDDDDD',
+          },
+        },
       })
     );
 
     formData.bidderRequirements.forEach(requirement => {
-      // Add criterion heading
       if (requirement.criterion) {
         sections.push(
           new Paragraph({
@@ -328,10 +480,10 @@ function generateDocumentSections(formData, docxClasses) {
                 bold: true,
                 size: 20, // 10pt
                 font: 'Arial',
-                color: '333333',
+                color: '000000',
               }),
             ],
-            spacing: { before: 160, after: 80 },
+            spacing: { before: 160, after: 120 },
           })
         );
       }
@@ -339,20 +491,27 @@ function generateDocumentSections(formData, docxClasses) {
       // Add sub-requirements
       if (requirement.requirements && requirement.requirements.length > 0) {
         requirement.requirements.forEach(subReq => {
-          if (subReq.text) {
-            sections.push(
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `• ${subReq.text}`,
-                    size: 20, // 10pt
-                    font: 'Arial',
-                  }),
-                ],
-                spacing: { after: 120 },
-              })
-            );
-          }
+          sections.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: '• ', // Blue bullet point
+                  color: '0066CC',
+                  bold: true,
+                  size: 20,
+                  font: 'Arial',
+                }),
+                new TextRun({
+                  text: subReq.text || '',
+                  size: 20, // 10pt
+                  font: 'Arial',
+                  color: '333333',
+                }),
+              ],
+              spacing: { after: 120 },
+              indent: { left: 300 }, // Indentation for list items
+            })
+          );
         });
       }
     });
@@ -375,6 +534,13 @@ function generateDocumentSections(formData, docxClasses) {
         ],
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 320, after: 160 },
+        border: {
+          bottom: {
+            style: BorderStyle.SINGLE,
+            size: 1,
+            color: 'DDDDDD',
+          },
+        },
       })
     );
 
@@ -391,12 +557,20 @@ function generateDocumentSections(formData, docxClasses) {
         
         if (requirement.criteriaType) {
           const criteriaText = requirement.criteriaType === 'A' ? 'Ausschlusskriterium' : 'Bewertungskriterium';
-          let badgeText = ` (${criteriaText}`;
+          let badgeText = criteriaText;
           if (requirement.criteriaType === 'B' && requirement.weight) {
-            badgeText += `, ${requirement.weight}%`;
+            badgeText += ` (${requirement.weight}%)`;
           }
-          badgeText += ')';
-          
+
+          textRuns.push(
+            new TextRun({
+              text: ` - `,
+              size: 20,
+              font: 'Arial',
+              color: '333333',
+            })
+          );
+            
           textRuns.push(
             new TextRun({
               text: badgeText,
@@ -407,17 +581,18 @@ function generateDocumentSections(formData, docxClasses) {
             })
           );
         }
-        
+
         sections.push(
           new Paragraph({
             children: textRuns,
-            spacing: { after: 120 },
+            spacing: { after: 160 },
+            indent: { left: 300, hanging: 200 }, // Better indentation for list items
           })
         );
       }
     });
 
-    sections.push(new Paragraph({ text: '', spacing: { after: 120 } }));
+    sections.push(new Paragraph({ text: '', spacing: { after: 320 } }));
   }
 
   // Cost structure
@@ -435,6 +610,13 @@ function generateDocumentSections(formData, docxClasses) {
         ],
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 320, after: 160 },
+        border: {
+          bottom: {
+            style: BorderStyle.SINGLE,
+            size: 1,
+            color: 'DDDDDD',
+          },
+        },
       })
     );
 
@@ -444,27 +626,67 @@ function generateDocumentSections(formData, docxClasses) {
       new TableRow({
         children: [
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: 'Pos.', bold: true, color: 'FFFFFF' })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ 
+                text: 'Pos.', 
+                bold: true, 
+                color: 'FFFFFF',
+                size: 18,
+                font: 'Arial'
+              })] 
+            })],
             width: { size: 10, type: WidthType.PERCENTAGE },
             shading: { fill: '0066CC' },
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: 'Beschreibung', bold: true, color: 'FFFFFF' })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ 
+                text: 'Beschreibung', 
+                bold: true, 
+                color: 'FFFFFF',
+                size: 18,
+                font: 'Arial'
+              })] 
+            })],
             width: { size: 40, type: WidthType.PERCENTAGE },
             shading: { fill: '0066CC' },
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: 'Menge/Einheit', bold: true, color: 'FFFFFF' })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ 
+                text: 'Menge/Einheit', 
+                bold: true, 
+                color: 'FFFFFF',
+                size: 18,
+                font: 'Arial'
+              })] 
+            })],
             width: { size: 20, type: WidthType.PERCENTAGE },
             shading: { fill: '0066CC' },
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: 'Einzelpreis (€)', bold: true, color: 'FFFFFF' })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ 
+                text: 'Einzelpreis (€)', 
+                bold: true, 
+                color: 'FFFFFF',
+                size: 18,
+                font: 'Arial'
+              })] 
+            })],
             width: { size: 15, type: WidthType.PERCENTAGE },
             shading: { fill: '0066CC' },
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: 'Gesamtpreis (€)', bold: true, color: 'FFFFFF' })] })],
+            children: [new Paragraph({ 
+              children: [new TextRun({ 
+                text: 'Gesamtpreis (€)', 
+                bold: true, 
+                color: 'FFFFFF',
+                size: 18,
+                font: 'Arial'
+              })] 
+            })],
             width: { size: 15, type: WidthType.PERCENTAGE },
             shading: { fill: '0066CC' },
           }),
@@ -494,19 +716,53 @@ function generateDocumentSections(formData, docxClasses) {
         new TableRow({
           children: [
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: (index + 1).toString() })], alignment: AlignmentType.RIGHT })],
+              children: [new Paragraph({ 
+                children: [new TextRun({ 
+                  text: (index + 1).toString(),
+                  size: 18,
+                  font: 'Arial'
+                })], 
+                alignment: AlignmentType.RIGHT 
+              })],
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: description })] })],
+              children: [new Paragraph({ 
+                children: [new TextRun({ 
+                  text: description,
+                  size: 18,
+                  font: 'Arial'
+                })] 
+              })],
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: String(quantity) })], alignment: AlignmentType.RIGHT })],
+              children: [new Paragraph({ 
+                children: [new TextRun({ 
+                  text: String(quantity),
+                  size: 18,
+                  font: 'Arial'
+                })], 
+                alignment: AlignmentType.RIGHT 
+              })],
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: formatCurrency(row.unitPrice || 0) })], alignment: AlignmentType.RIGHT })],
+              children: [new Paragraph({ 
+                children: [new TextRun({ 
+                  text: formatCurrency(row.unitPrice || 0),
+                  size: 18,
+                  font: 'Arial'
+                })], 
+                alignment: AlignmentType.RIGHT 
+              })],
             }),
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: formatCurrency(total) })], alignment: AlignmentType.RIGHT })],
+              children: [new Paragraph({ 
+                children: [new TextRun({ 
+                  text: formatCurrency(total),
+                  size: 18,
+                  font: 'Arial'
+                })], 
+                alignment: AlignmentType.RIGHT 
+              })],
             }),
           ],
         })
@@ -519,15 +775,15 @@ function generateDocumentSections(formData, docxClasses) {
         children: [
           new TableCell({
             children: [new Paragraph({ children: [new TextRun({ text: '', bold: true })] })],
-            columnSpan: 4,
+            columnSpan: 3,
             shading: { fill: 'F8F9FA' },
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: 'Gesamtsumme', bold: true })] })],
+            children: [new Paragraph({ children: [new TextRun({ text: 'Gesamtsumme', bold: true, color: '000000', size: 20, font: 'Arial' })] })],
             shading: { fill: 'F8F9FA' },
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: formatCurrency(totalCost), bold: true })], alignment: AlignmentType.RIGHT })],
+            children: [new Paragraph({ children: [new TextRun({ text: formatCurrency(totalCost), bold: true, color: '000000', size: 20, font: 'Arial' })], alignment: AlignmentType.RIGHT })],
             shading: { fill: 'F8F9FA' },
           }),
         ],
@@ -549,7 +805,7 @@ function generateDocumentSections(formData, docxClasses) {
       })
     );
 
-    sections.push(new Paragraph({ text: '', spacing: { after: 240 } }));
+    sections.push(new Paragraph({ text: '', spacing: { after: 320 } }));
   }
 
   // Contract details (if user role is 'einkauf')
@@ -573,6 +829,13 @@ function generateDocumentSections(formData, docxClasses) {
         ],
         heading: HeadingLevel.HEADING_2,
         spacing: { before: 320, after: 160 },
+        border: {
+          bottom: {
+            style: BorderStyle.SINGLE,
+            size: 1,
+            color: 'DDDDDD',
+          },
+        },
       })
     );
 
@@ -580,10 +843,31 @@ function generateDocumentSections(formData, docxClasses) {
       sections.push(
         new Paragraph({
           children: [
-            new TextRun({ text: `Anlage ${index + 1}: `, bold: true, size: 20, font: 'Arial' }),
-            new TextRun({ text: attachment.name, size: 20, font: 'Arial' }),
+            new TextRun({ 
+              text: `Anlage ${index + 1}: `, 
+              bold: true, 
+              size: 20, 
+              font: 'Arial',
+              color: '000000'
+            }),
+            new TextRun({ 
+              text: attachment.name, 
+              size: 20, 
+              font: 'Arial',
+              color: '333333'
+            }),
           ],
-          spacing: { after: 60 },
+          spacing: { after: 80 },
+          shading: {
+            fill: 'F8F9FA',
+          },
+          indent: { left: 200 },
+          border: {
+            left: { style: BorderStyle.SINGLE, size: 1, color: 'E9ECEF' },
+            top: { style: BorderStyle.SINGLE, size: 1, color: 'E9ECEF' },
+            bottom: { style: BorderStyle.SINGLE, size: 1, color: 'E9ECEF' },
+            right: { style: BorderStyle.SINGLE, size: 1, color: 'E9ECEF' },
+          },
         })
       );
 
@@ -591,15 +875,22 @@ function generateDocumentSections(formData, docxClasses) {
         sections.push(
           new Paragraph({
             children: [
-              new TextRun({ text: attachment.description, size: 18, font: 'Arial', color: '666666' }),
+              new TextRun({ 
+                text: attachment.description, 
+                size: 18, 
+                font: 'Arial', 
+                color: '666666',
+                italics: true
+              }),
             ],
-            spacing: { after: 120 },
+            spacing: { after: 160 },
+            indent: { left: 400 },
           })
         );
       }
     });
 
-    sections.push(new Paragraph({ text: '', spacing: { after: 240 } }));
+    sections.push(new Paragraph({ text: '', spacing: { after: 320 } }));
   }
 
   // Footer
@@ -646,6 +937,20 @@ function generateContractDetails(formData, docxClasses) {
       ],
       heading: HeadingLevel.HEADING_2,
       spacing: { before: 320, after: 160 },
+      border: {
+        bottom: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: 'DDDDDD',
+        },
+      },
+      border: {
+        bottom: {
+          style: BorderStyle.SINGLE,
+          size: 1,
+          color: 'DDDDDD',
+        },
+      },
     })
   );
 
@@ -653,10 +958,21 @@ function generateContractDetails(formData, docxClasses) {
     sections.push(
       new Paragraph({
         children: [
-          new TextRun({ text: 'Vertragsvolumen: ', bold: true, size: 20, font: 'Arial' }),
-          new TextRun({ text: formatCurrency(formData.contractVolume), size: 20, font: 'Arial' }),
+          new TextRun({ 
+            text: 'Vertragsvolumen: ', 
+            bold: true, 
+            size: 20, 
+            font: 'Arial',
+            color: '000000'
+          }),
+          new TextRun({ 
+            text: formatCurrency(formData.contractVolume), 
+            size: 20, 
+            font: 'Arial',
+            color: '333333'
+          }),
         ],
-        spacing: { after: 120 },
+        spacing: { after: 160 },
       })
     );
   }
@@ -665,10 +981,21 @@ function generateContractDetails(formData, docxClasses) {
     sections.push(
       new Paragraph({
         children: [
-          new TextRun({ text: 'Vertragslaufzeit: ', bold: true, size: 20, font: 'Arial' }),
-          new TextRun({ text: `${formData.contractDuration} Jahr(e)`, size: 20, font: 'Arial' }),
+          new TextRun({ 
+            text: 'Vertragslaufzeit: ', 
+            bold: true, 
+            size: 20, 
+            font: 'Arial',
+            color: '000000'
+          }),
+          new TextRun({ 
+            text: `${formData.contractDuration} Jahr(e)`, 
+            size: 20, 
+            font: 'Arial',
+            color: '333333'
+          }),
         ],
-        spacing: { after: 120 },
+        spacing: { after: 160 },
       })
     );
   }
@@ -678,10 +1005,21 @@ function generateContractDetails(formData, docxClasses) {
     sections.push(
       new Paragraph({
         children: [
-          new TextRun({ text: 'Zahlungsbedingungen: ', bold: true, size: 20, font: 'Arial' }),
-          new TextRun({ text: paymentText, size: 20, font: 'Arial' }),
+          new TextRun({ 
+            text: 'Zahlungsbedingungen: ', 
+            bold: true, 
+            size: 20, 
+            font: 'Arial',
+            color: '000000'
+          }),
+          new TextRun({ 
+            text: paymentText, 
+            size: 20, 
+            font: 'Arial',
+            color: '333333'
+          }),
         ],
-        spacing: { after: 120 },
+        spacing: { after: 160 },
       })
     );
   }
@@ -691,10 +1029,21 @@ function generateContractDetails(formData, docxClasses) {
     sections.push(
       new Paragraph({
         children: [
-          new TextRun({ text: 'Gewährleistung: ', bold: true, size: 20, font: 'Arial' }),
-          new TextRun({ text: warrantyText, size: 20, font: 'Arial' }),
+          new TextRun({ 
+            text: 'Gewährleistung: ', 
+            bold: true, 
+            size: 20, 
+            font: 'Arial',
+            color: '000000'
+          }),
+          new TextRun({ 
+            text: warrantyText, 
+            size: 20, 
+            font: 'Arial',
+            color: '333333'
+          }),
         ],
-        spacing: { after: 120 },
+        spacing: { after: 160 },
       })
     );
   }
@@ -703,10 +1052,21 @@ function generateContractDetails(formData, docxClasses) {
     sections.push(
       new Paragraph({
         children: [
-          new TextRun({ text: 'Ansprechperson: ', bold: true, size: 20, font: 'Arial' }),
-          new TextRun({ text: formData.contactPerson, size: 20, font: 'Arial' }),
+          new TextRun({ 
+            text: 'Ansprechperson: ', 
+            bold: true, 
+            size: 20, 
+            font: 'Arial',
+            color: '000000'
+          }),
+          new TextRun({ 
+            text: formData.contactPerson, 
+            size: 20, 
+            font: 'Arial',
+            color: '333333'
+          }),
         ],
-        spacing: { after: 120 },
+        spacing: { after: 160 },
       })
     );
   }
@@ -715,10 +1075,21 @@ function generateContractDetails(formData, docxClasses) {
     sections.push(
       new Paragraph({
         children: [
-          new TextRun({ text: 'E-Mail: ', bold: true, size: 20, font: 'Arial' }),
-          new TextRun({ text: formData.contactEmail, size: 20, font: 'Arial' }),
+          new TextRun({ 
+            text: 'E-Mail: ', 
+            bold: true, 
+            size: 20, 
+            font: 'Arial',
+            color: '000000'
+          }),
+          new TextRun({ 
+            text: formData.contactEmail, 
+            size: 20, 
+            font: 'Arial',
+            color: '333333'
+          }),
         ],
-        spacing: { after: 120 },
+        spacing: { after: 160 },
       })
     );
   }
@@ -727,15 +1098,26 @@ function generateContractDetails(formData, docxClasses) {
     sections.push(
       new Paragraph({
         children: [
-          new TextRun({ text: 'Telefon: ', bold: true, size: 20, font: 'Arial' }),
-          new TextRun({ text: formData.contactPhone, size: 20, font: 'Arial' }),
+          new TextRun({ 
+            text: 'Telefon: ', 
+            bold: true, 
+            size: 20, 
+            font: 'Arial',
+            color: '000000'
+          }),
+          new TextRun({ 
+            text: formData.contactPhone, 
+            size: 20, 
+            font: 'Arial',
+            color: '333333'
+          }),
         ],
-        spacing: { after: 120 },
+        spacing: { after: 160 },
       })
     );
   }
 
-  sections.push(new Paragraph({ text: '', spacing: { after: 240 } }));
+  sections.push(new Paragraph({ text: '', spacing: { after: 320 } }));
   return sections;
 }
 
@@ -756,8 +1138,26 @@ function formatDate(dateString) {
  * @returns {String} Formatted currency
  */
 function formatCurrency(value) {
+  if (!value && value !== 0) return '0,00';
   return new Intl.NumberFormat('de-DE', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(value);
+}
+
+function getServiceTypeText(serviceType) {
+  const types = {
+    'vob': 'Bauleistung (VOB)',
+    'vol': 'Liefer-/Dienstleistung (VOL)'
+  };
+  return types[serviceType] || serviceType;
+}
+
+function getContractFormText(contractForm) {
+  const forms = {
+    'einzelauftrag': 'Einzelauftrag',
+    'rahmenvereinbarung': 'Rahmenvereinbarung',
+    'kauf': 'Kauf'
+  };
+  return forms[contractForm] || contractForm;
 }
