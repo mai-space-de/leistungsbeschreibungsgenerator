@@ -1,45 +1,30 @@
 <template>
   <div class="step-navigation">
-    <div class="step-info">
-      <h2>Schritt {{ currentStep }} von {{ effectiveTotalSteps }}</h2>
-      <div v-if="currentStep === 6 && formData.userRole !== 'einkauf'" class="skip-info">
-        <small>Schritt 6 wird übersprungen (nur für Einkauf relevant)</small>
-      </div>
-    </div>
-    
-    <!-- Validation warnings -->
-    <div v-if="validationWarnings.length > 0" class="validation-warnings">
-      <div class="warning-header">⚠️ Bitte prüfen Sie folgende Angaben:</div>
-      <ul class="warning-list">
-        <li v-for="warning in validationWarnings" :key="warning">{{ warning }}</li>
-      </ul>
-    </div>
-    
     <div class="navigation-buttons">
-      <button 
-        v-if="currentStep > 1" 
-        @click="$emit('previous-step')" 
+      <button
+        v-if="currentStep > 1"
+        @click="$emit('previous-step')"
         class="btn btn-secondary"
       >
-        Zurück
+        ← Zurück
       </button>
-      
-      <button 
-        v-if="currentStep < effectiveTotalSteps" 
-        @click="handleNextStep" 
+
+      <button
+        v-if="currentStep < effectiveTotalSteps"
+        @click="handleNextStep"
         class="btn btn-primary ml-auto"
         :disabled="hasBlockingValidation"
       >
-        {{ isSkippingStep ? 'Weiter (überspringen)' : 'Weiter' }}
+        {{ isSkippingStep ? 'Weiter (überspringen) →' : 'Weiter →' }}
       </button>
-      
-      <button 
-        v-if="currentStep === effectiveTotalSteps" 
-        @click="$emit('generate-document')" 
+
+      <button
+        v-if="currentStep === effectiveTotalSteps"
+        @click="$emit('generate-document')"
         class="btn btn-success ml-auto"
         :disabled="hasBlockingValidation"
       >
-        Dokument generieren
+        Dokument generieren ✓
       </button>
     </div>
   </div>
@@ -68,65 +53,23 @@ export default {
       // Skip step 6 (Contract Details) if user is not Einkauf
       return this.formData.userRole === 'einkauf' ? this.totalSteps : this.totalSteps - 1;
     },
-    
+
     isSkippingStep() {
       return this.currentStep === 6 && this.formData.userRole !== 'einkauf';
     },
-    
-    validationWarnings() {
-      const warnings = [];
-      
-      // Step 1 validations
-      if (this.currentStep === 1) {
-        if (!this.formData.userRole) warnings.push('Bitte wählen Sie Ihre Rolle aus');
-        if (!this.formData.projectTitle) warnings.push('Projekttitel ist erforderlich');
-        if (!this.formData.serviceType) warnings.push('Leistungsart ist erforderlich');
-        if (!this.formData.contractForm) warnings.push('Vertragsform ist erforderlich');
-        if (!this.formData.location) warnings.push('Leistungsort ist erforderlich');
-        if (this.formData.userRole === 'einkauf' && !this.formData.vergabeNr) {
-          warnings.push('Vergabenummer ist für Einkauf erforderlich');
-        }
-      }
-      
-      // Step 2 validations
-      if (this.currentStep === 2) {
-        if (this.formData.serviceType === 'vob' && !this.formData.stlbNumber) {
-          warnings.push('STLB-Nummer ist für VOB-Leistungen erforderlich');
-        }
-        if (this.formData.serviceType === 'vol' && !this.formData.serviceDefinition) {
-          warnings.push('Leistungsdefinition ist für VOL-Leistungen erforderlich');
-        }
-        if (!this.formData.startDate) warnings.push('Startdatum ist erforderlich');
-        if (!this.formData.endDate) warnings.push('Enddatum ist erforderlich');
-      }
-      
-      // Step 6 validations (only for Einkauf)
-      if (this.currentStep === 6 && this.formData.userRole === 'einkauf') {
-        if (!this.formData.contractVolume || this.formData.contractVolume <= 0) {
-          warnings.push('Auftragsvolumen ist erforderlich');
-        }
-        if (!this.formData.contractDuration || this.formData.contractDuration <= 0) {
-          warnings.push('Vertragslaufzeit ist erforderlich');
-        }
-        if (!this.formData.paymentTerms) warnings.push('Zahlungskonditionen sind erforderlich');
-        if (!this.formData.warrantyPeriod) warnings.push('Gewährleistungsdauer ist erforderlich');
-      }
-      
-      return warnings;
-    },
-    
+
     hasBlockingValidation() {
       // Only block on critical validations
       if (this.currentStep === 1) {
         return !this.formData.userRole || !this.formData.projectTitle || !this.formData.serviceType;
       }
-      
+
       if (this.currentStep === 2) {
         if (this.formData.serviceType === 'vob' && !this.formData.stlbNumber) return true;
         if (this.formData.serviceType === 'vol' && !this.formData.serviceDefinition) return true;
         return !this.formData.startDate || !this.formData.endDate;
       }
-      
+
       return false;
     }
   },
@@ -147,52 +90,24 @@ export default {
 
 <style scoped>
 .step-navigation {
-  margin-top: 30px;
-  padding-top: 20px;
+  margin-top: auto;
+  padding: 20px 0;
   border-top: 1px solid var(--border);
-}
-
-.step-info h2 {
-  color: var(--primary);
-  margin-bottom: 10px;
-  font-size: 1.4rem;
-  font-weight: 600;
-}
-
-.skip-info {
-  margin-bottom: 15px;
-  color: #666;
-  font-style: italic;
-}
-
-.validation-warnings {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  color: #856404;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-.warning-header {
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.warning-list {
-  margin: 0;
+  background: linear-gradient(180deg, rgba(248, 249, 250, 0.8) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border-radius: 0 0 8px 8px;
+  margin-left: -20px;
+  margin-right: -20px;
   padding-left: 20px;
-}
-
-.warning-list li {
-  margin-bottom: 4px;
+  padding-right: 20px;
 }
 
 .navigation-buttons {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 15px;
+  width: 100%;
+  margin: 0 auto;
+  align-items: center;
 }
 
 .btn {
@@ -200,17 +115,22 @@ export default {
   color: white;
   border: none;
   padding: 12px 24px;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 102, 204, 0.2);
+  min-width: 120px;
+  text-align: center;
+  width: 100%;
+  max-width: 200px;
 }
 
 .btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 102, 204, 0.3);
 }
 
 .btn:disabled {
@@ -221,6 +141,7 @@ export default {
 
 .btn-secondary {
   background: #6c757d;
+  grid-column-start: 1;
 }
 
 .btn-secondary:hover {
@@ -229,6 +150,7 @@ export default {
 
 .btn-primary {
   background: var(--primary);
+  grid-column-start: 2;
 }
 
 .btn-primary:hover {
@@ -244,18 +166,25 @@ export default {
 }
 
 .ml-auto {
-  margin-left: auto;
+  justify-self: end;
 }
 
 @media (max-width: 768px) {
-  .navigation-buttons {
-    flex-direction: column;
-    gap: 10px;
+  .step-navigation {
+    margin-left: -15px;
+    margin-right: -15px;
+    padding-left: 15px;
+    padding-right: 15px;
   }
-  
+
+  .navigation-buttons {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
   .btn {
-    width: 100%;
     margin-left: 0 !important;
+    min-width: 100px;
   }
 }
 </style>

@@ -18,57 +18,73 @@
           {{ errorMessage }}
         </div>
 
-        <!-- Step Components -->
-        <UserRoleStep
-          v-if="currentStep === 1"
-          :form-data="formData"
-          @update-field="updateField"
-        />
-
-        <ServiceDefinitionStep
-          v-if="currentStep === 2"
-          :form-data="formData"
-          @update-field="updateField"
-        />
-
-        <BidderRequirementsStep
-          v-if="currentStep === 3"
-          :form-data="formData"
-          @update-field="updateField"
-        />
-
-        <ServiceRequirementsStep
-          v-if="currentStep === 4"
-          :form-data="formData"
-          @update-field="updateField"
-        />
-
-        <CostStructureStep
-          v-if="currentStep === 5"
-          :form-data="formData"
-          @update-field="updateField"
-        />
-
-        <ContractDetailsStep
-          v-if="currentStep === 6"
-          :form-data="formData"
-          @update-field="updateField"
-        />
-
-        <AttachmentsStep
-          v-if="currentStep === 7"
-          :form-data="formData"
-          @update-field="updateField"
-        />
-
-        <!-- Navigation -->
-        <StepNavigation
+        <!-- Progress Bar -->
+        <ProgressBar
           :current-step="currentStep"
           :total-steps="totalSteps"
           :form-data="formData"
-          @previous-step="previousStep"
-          @next-step="nextStep"
-          @generate-document="generateDocument"
+        />
+
+        <!-- Step Header -->
+        <StepHeader
+          :current-step="currentStep"
+          :total-steps="totalSteps"
+          :form-data="formData"
+        />
+
+        <!-- Step Components -->
+        <div class="step-content">
+          <UserRoleStep
+            v-if="currentStep === 1"
+            :form-data="formData"
+            @update-field="updateField"
+          />
+
+          <ServiceDefinitionStep
+            v-if="currentStep === 2"
+            :form-data="formData"
+            @update-field="updateField"
+          />
+
+          <BidderRequirementsStep
+            v-if="currentStep === 3"
+            :form-data="formData"
+            @update-field="updateField"
+          />
+
+          <ServiceRequirementsStep
+            v-if="currentStep === 4"
+            :form-data="formData"
+            @update-field="updateField"
+          />
+
+          <CostStructureStep
+            v-if="currentStep === 5"
+            :form-data="formData"
+            @update-field="updateField"
+          />
+
+          <ContractDetailsStep
+            v-if="currentStep === 6"
+            :form-data="formData"
+            @update-field="updateField"
+          />
+
+          <AttachmentsStep
+            v-if="currentStep === 7"
+            :form-data="formData"
+            @update-field="updateField"
+          />
+        </div>
+
+        <!-- Navigation -->
+        <StepNavigation
+            :current-step="currentStep"
+            :total-steps="totalSteps"
+            :form-data="formData"
+            @previous-step="previousStep"
+            @next-step="nextStep"
+            @generate-document="generateDocument"
         />
       </div>
 
@@ -92,6 +108,8 @@ import CostStructureStep from './components/steps/CostStructureStep.vue'
 import ContractDetailsStep from './components/steps/ContractDetailsStep.vue'
 import AttachmentsStep from './components/steps/AttachmentsStep.vue'
 import StepNavigation from './components/StepNavigation.vue'
+import StepHeader from './components/StepHeader.vue'
+import ProgressBar from './components/ProgressBar.vue'
 import DocumentPreview from './components/DocumentPreview.vue'
 import { exportToPDF } from './utils/pdfExport.js'
 import { exportToWord } from './utils/wordExport.js'
@@ -108,6 +126,8 @@ export default {
     ContractDetailsStep,
     AttachmentsStep,
     StepNavigation,
+    StepHeader,
+    ProgressBar,
     DocumentPreview
   },
   data() {
@@ -128,22 +148,22 @@ export default {
         contractForm: '',
         location: '',
         currentSituation: '',
-        
+
         // Service Definition (Step 2)
         stlbNumber: '',
         serviceDefinition: '',
         startDate: '',
         endDate: '',
-        
+
         // Bidder Requirements (Step 3)
         bidderRequirements: [],
-        
+
         // Service Requirements (Step 4)
         serviceRequirements: [],
-        
+
         // Cost Structure (Step 5)
         costRows: [],
-        
+
         // Contract Details (Step 6) - Einkauf only
         contractVolume: 0,
         contractDuration: 1,
@@ -158,10 +178,10 @@ export default {
         guidelinesUnderstood: false,
         equalTreatment: false,
         transparency: false,
-        
+
         // Attachments (Step 7)
         attachments: [],
-        
+
         // Legacy fields for backward compatibility
         scopeDescription: '',
         deliverables: '',
@@ -218,22 +238,22 @@ export default {
           contractForm: '',
           location: '',
           currentSituation: '',
-          
+
           // Service Definition (Step 2)
           stlbNumber: '',
           serviceDefinition: '',
           startDate: '',
           endDate: '',
-          
+
           // Bidder Requirements (Step 3)
           bidderRequirements: [],
-          
+
           // Service Requirements (Step 4)
           serviceRequirements: [],
-          
+
           // Cost Structure (Step 5)
           costRows: [],
-          
+
           // Contract Details (Step 6) - Einkauf only
           contractVolume: 0,
           contractDuration: 1,
@@ -248,10 +268,10 @@ export default {
           guidelinesUnderstood: false,
           equalTreatment: false,
           transparency: false,
-          
+
           // Attachments (Step 7)
           attachments: [],
-          
+
           // Legacy fields for backward compatibility
           scopeDescription: '',
           deliverables: '',
@@ -271,7 +291,7 @@ export default {
     nextStep() {
       if (this.currentStep < this.totalSteps) {
         this.currentStep++;
-        
+
         // Skip step 6 (Contract Details) if user is not Einkauf
         if (this.currentStep === 6 && this.formData.userRole !== 'einkauf') {
           this.currentStep++;
@@ -282,7 +302,7 @@ export default {
     previousStep() {
       if (this.currentStep > 1) {
         this.currentStep--;
-        
+
         // Skip step 6 (Contract Details) if user is not Einkauf when going backwards
         if (this.currentStep === 6 && this.formData.userRole !== 'einkauf') {
           this.currentStep--;
@@ -293,13 +313,13 @@ export default {
     async exportPDF() {
       try {
         this.showError(''); // Clear any previous errors
-        
+
         // Generate filename based on project title
         const filename = this.generateFilename('pdf');
-        
+
         // Export to PDF
         const result = await exportToPDF(this.formData, filename);
-        
+
         if (result.success) {
           this.showSuccess('PDF erfolgreich exportiert!');
         } else {
@@ -314,13 +334,13 @@ export default {
     async exportWord() {
       try {
         this.showError(''); // Clear any previous errors
-        
+
         // Generate filename based on project title
         const filename = this.generateFilename('docx');
-        
+
         // Export to Word
         const result = await exportToWord(this.formData, filename);
-        
+
         if (result.success) {
           this.showSuccess('Word-Dokument erfolgreich exportiert!');
         } else {
@@ -341,19 +361,19 @@ export default {
     generateFilename(extension) {
       // Generate filename based on project title and vergabe number
       let filename = 'Leistungsbeschreibung';
-      
+
       if (this.formData.projectTitle) {
         filename = this.formData.projectTitle.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '').trim();
       }
-      
+
       if (this.formData.vergabeNr) {
         filename += `_${this.formData.vergabeNr}`;
       }
-      
+
       // Add current date
       const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
       filename += `_${date}`;
-      
+
       return `${filename}.${extension}`;
     },
 
@@ -513,6 +533,8 @@ body {
   overflow-y: auto;
   width: 100%;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .layout.with-preview .editor-col {
@@ -540,6 +562,17 @@ body {
   background: #d4edda;
   border-color: #c3e6cb;
   color: #155724;
+}
+
+/* Step content area */
+.step-content {
+  flex: 1;
+  margin: 20px 0;
+}
+
+/* Navigation stays at bottom */
+.step-navigation {
+  margin-top: auto;
 }
 
 /* Responsive Design */
